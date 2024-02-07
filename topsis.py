@@ -10,7 +10,7 @@ from scipy.stats import rankdata
 import datetime
 import asyncio
 
-async def ejecutar_topsis():
+async def ejecutar_topsis(w, wwi, c1, c2, T, r1, r2):
 
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
@@ -132,12 +132,14 @@ async def ejecutar_topsis():
     print("La clasificación de las alternativas, de manera descendente es: ", Alt )
     print()
 
+
     ############################################################
     ############################################################
     # PAra almacenar tiempo de ejecución
     hora_fin = datetime.datetime.now()
     ejecut=hora_fin-hora_inicio
-    alternativas = ranked_candidates[-5:]
+    alternativas = Alt[:5]
+    print(alternativas)
 
     # PAra guardar información en archivo de EXCEl
     dT= {"Algoritmo": ["TOPSIS"],
@@ -150,7 +152,7 @@ async def ejecutar_topsis():
     dataAlt = pd.DataFrame(Alt)
     dataw = pd.DataFrame(w)
 
-    with pd.ExcelWriter('Experimentos/TOPSIS.xlsx', engine='xlsxwriter') as writer:
+    with pd.ExcelWriter('Experimentos2/TOPSIS.xlsx', engine='xlsxwriter') as writer:
         #dataI.to_excel(writer, sheet_name='Iniciales')
         dataT.to_excel(writer, sheet_name='Tiempos')
         dataw.to_excel(writer, sheet_name='w')
@@ -171,7 +173,7 @@ async def ejecutar_topsis():
     await asyncio.sleep(0.1)
 
     datosTopsis = {
-         "mejor_alternativa": alternativas,
+        "mejor_alternativa": alternativas,
         "iteraciones": n,
         "hora_inicio": hora_inicio.time().strftime('%H:%M:%S'),
         "fecha_inicio": fecha_inicio.isoformat(),
