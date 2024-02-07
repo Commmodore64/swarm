@@ -88,6 +88,11 @@ async def ejecutar_moorav(w, wwi, c1, c2, T, r1, r2):
     print("\nClasificación Final:")
     print(RankFin)
 
+    arreglo = ranked_alternatives.index[-5:]
+    arregloInvertido = tuple(reversed(arreglo))
+    print(arregloInvertido)
+    alternativas = arregloInvertido
+
     print("La mejor solución es la alternativa:", RankFin.iloc[0]['Alternativa'], "con una puntuación global de:", RankFin.iloc[0]['Puntuación Global'])
 
 
@@ -95,7 +100,7 @@ async def ejecutar_moorav(w, wwi, c1, c2, T, r1, r2):
     # Para almacenar tiempo de ejecución
     hora_fin = datetime.datetime.now()
     ejecut = hora_fin - hora_inicio
-    alternativas = RankFin[-5:]['Alternativa']
+    
 
     # Para guardar información en archivo de EXCEl
     dT = {"Algoritmo": ["TOPSIS"],

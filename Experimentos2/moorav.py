@@ -76,13 +76,17 @@ print(global_scores)
 ### -- Clasificación de alternativas
 ranked_alternatives = global_scores.sort_values(ascending=False)
 print("\nClasificación de alternativas:")
-print(ranked_alternatives)
+print(ranked_alternatives.iloc[3])
 
 #####################################################################################
 ### -- Crear DataFrame para clasificación final
 RankFin = pd.DataFrame(ranked_alternatives, columns=['Puntuación Global'])
 RankFin['Alternativa'] = ranked_alternatives.index
+print (ranked_alternatives.index[-5:])
 RankFin.reset_index(drop=True, inplace=True)
+arreglo = ranked_alternatives.index[-5:]
+arregloInvertido = tuple(reversed(arreglo))
+print(arregloInvertido)
 
 print("\nClasificación Final:")
 print(RankFin)
