@@ -42,15 +42,66 @@
                         </div>
                     </p>
                     <div class="container mx-auto px-6 py-10">
-                        <p class="mt-6 text-gray-500 text-justify">
-                            El PSO es especialmente efectivo en problemas de optimización continua y multidimensional, como la
-                            optimización de funciones matemáticas complejas o la sintonización de parámetros en algoritmos de
-                            aprendizaje automático. Su capacidad para mantener un equilibrio entre la exploración y la explotación
-                            lo hace útil en una amplia gama de aplicaciones, desde la ingeniería hasta la optimización de carteras
-                            de inversión y la búsqueda de rutas óptimas. Este enfoque, inspirado en la naturaleza, ha demostrado ser
-                            una valiosa herramienta en la resolución de problemas de optimización.
-                        </p>
                     </div>
+                    <p class="text-justify text-gray-500">
+                        <div class="">
+                            <li><strong>Velocidades y posiciones:</strong></li>
+                            <h2>
+                              Cada partícula tiene dos componentes clave: su posición actual en el espacio de búsqueda y su velocidad. La posición representa una posible solución al problema, mientras que la velocidad determina la dirección y la magnitud del movimiento de la partícula en el espacio.
+                            </h2>
+                            <!-- ... (otros elementos li y h2) ... -->
+                        </div>
+                    </p>
+                    <p class="text-justify text-gray-500">
+                        <div class="mt-5">
+                            <li><strong>Mejor posición personal (pbest): </strong></li>
+                            <h2>
+                              Cada partícula lleva un registro de la mejor posición que ha encontrado hasta ese momento, conocida como "pbest" (personal best). Inicialmente, el "pbest" de cada partícula es su posición inicial.
+                            </h2>
+                            <!-- ... (otros elementos li y h2) ... -->
+                        </div>
+                    </p>
+                    <p class="text-justify text-gray-500">
+                        <div class="mt-5">
+                            <li><strong>Mejor posición global (gbest):  </strong></li>
+                            <h2>
+                              Además de su mejor posición personal, las partículas también están al tanto de la mejor posición encontrada por cualquier partícula en todo el enjambre, denominada "gbest" (global best).                            </h2>
+                            <!-- ... (otros elementos li y h2) ... -->
+                        </div>
+                    </p>
+                    <p class="text-justify text-gray-500">
+                        <div class="mt-5">
+                            <li><strong>Movimiento de las partículas:</strong></li>
+                            <h2>
+                              En cada iteración, las partículas ajustan su velocidad y posición siguiendo dos influencias clave: su "pbest" y el "gbest". El ajuste se realiza de la siguiente manera:
+                              o	La velocidad de cada partícula se actualiza en función de su velocidad anterior, su distancia a su "pbest" y su distancia al "gbest".
+                              o	La posición de la partícula se actualiza en función de su posición anterior y su nueva velocidad.
+                                                          <!-- ... (otros elementos li y h2) ... -->
+                        </div>
+                    </p>
+                    <p class="text-justify text-gray-500">
+                        <div class="mt-5">
+                            <li><strong>Equilibrio entre exploración y explotación: </strong></li>
+                            <h2>
+                              El PSO logra un equilibrio entre la exploración (buscar nuevas áreas del espacio de búsqueda) y la explotación (refinar las áreas prometedoras). Las partículas tienden a moverse hacia las regiones del espacio de búsqueda donde se han encontrado buenas soluciones.
+                                                          <!-- ... (otros elementos li y h2) ... -->
+                        </div>
+                    </p>
+                    <p class="text-justify text-gray-500">
+                        <div class="mt-5">
+                            <li><strong>•	Criterio de parada:</strong></li>
+                            <h2>
+                              El algoritmo PSO se ejecuta durante un número fijo de iteraciones o hasta que se cumple un criterio de parada predefinido, como alcanzar un valor objetivo o una tolerancia específica.                                                          <!-- ... (otros elementos li y h2) ... -->
+                        </div>
+                    </p>
+                    <p class="mt-6 text-gray-500 text-justify">
+                      El PSO es especialmente efectivo en problemas de optimización continua y multidimensional, como la
+                      optimización de funciones matemáticas complejas o la sintonización de parámetros en algoritmos de
+                      aprendizaje automático. Su capacidad para mantener un equilibrio entre la exploración y la explotación
+                      lo hace útil en una amplia gama de aplicaciones, desde la ingeniería hasta la optimización de carteras
+                      de inversión y la búsqueda de rutas óptimas. Este enfoque, inspirado en la naturaleza, ha demostrado ser
+                      una valiosa herramienta en la resolución de problemas de optimización.
+                  </p>
                 </div>
             </section>
         </div>
@@ -272,7 +323,7 @@
               </div>
               <button
                 type="button"
-                id="ejecutarBtn"
+                id="ejecutarPso"
                 class="text-black mt-5 hover:bg-blue focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center bg-slate-400"
               >
                 Calcular

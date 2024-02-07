@@ -1,15 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const ejecutarBtn = document.getElementById('ejecutarBtn');
-    const formulario = document.getElementById('psoForm');
-    const ejecutarDapso = document.getElementById('ejecutarDapso');
-    const formularioDapso = document.getElementById('dapsoForm');
+    const ejecutarPso = document.getElementById('ejecutarPso');
+    const psoForm = document.getElementById('psoForm');
     
 
-    ejecutarBtn.addEventListener('click', function () {
-        console.log('ejecutarBtn clicked');
+    ejecutarPso.addEventListener('click', function () {
+        console.log('ejecutarPso clicked');
 
         //Obtener datos del formulario
-        const formData = new FormData(formulario);
+        const formData = new FormData(psoForm);
 
         // Realizar la solicitud Ajax
         fetch('/pso', {
@@ -24,7 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
             for (let i = 0; i < mejoresAlternativas.length; i++) {
                 document.getElementById(`alternativa${i}`).innerText = mejoresAlternativas[i];
-                
             }
 
             document.getElementById('cantidadIteraciones').value = data.iteraciones;
@@ -37,44 +34,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 
-    ejecutarDapso.addEventListener('click', function () {
-        console.log('Ejecutar PSO clicked');
-
-        //Obtener datos del formulario
-        const formData = new FormData(formulario);
-
-        // Realizar la solicitud Ajax
-        fetch('/dapso', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())  // Parsea la respuesta como JSON
-        .then(data => {
-            console.log('Datos recibidos:', data);
-            // Actualizar los campos de entrada con los nuevos datos
-            const mejoresAlternativas = data.mejor_alternativa;
-
-            for (let i = 0; i < mejoresAlternativas.length; i++) {
-                document.getElementById(`alternativaDapso${i}`).innerText = mejoresAlternativas[i];
-                
-            }
-
-            document.getElementById('iteracionesDapso').value = data.iteraciones;
-            document.getElementById('horaInicioDapso').value = data.hora_inicio;
-            document.getElementById('fechaInicioDapso').value = data.fecha_inicio;
-            document.getElementById('horaFinalizacionDapso').value = data.hora_finalizacion;
-            document.getElementById('tiempoEjecucionDapso').value = data.tiempo_ejecucion;
-        })
-        .catch(error => console.error('Error:', error));
-    });
+    
 
     // Evitar el envío tradicional del formulario
-    formulario.addEventListener('submit', function (event) {
-        event.preventDefault();
-    });
-
-    // Evitar el envío tradicional del formulario
-    formularioDapso.addEventListener('submit', function (event) {
+    psoForm.addEventListener('submit', function (event) {
         event.preventDefault();
     });
 });
