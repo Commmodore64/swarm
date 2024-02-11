@@ -511,19 +511,13 @@ def calcular_topsis():
 def moorav():
     try:
         # Obtén los datos del formulario
-        w_input = float(request.form.get('w', '')) 
-        w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        w_input = request.form.get('w', '')  # Obtiene el valor de 'w' del formulario
+        w_values = w_input.split(",")  # Divide la cadena en valores individuales
+        w = [float(value.strip()) for value in w_values if value.strip()]  # Convierte cada valor a flotante
+        n = int(request.form['T'])
         
         # Llama a la función de procesar_datos en pso.py
-        datosMoorav = asyncio.run(ejecutar_moorav(w, wwi, c1, c2, T, r1, r2))
+        datosMoorav = asyncio.run(ejecutar_moorav(w,n))
 
         return render_template('moorav.html', datosMoorav=datosMoorav)
     except Exception as e:
@@ -534,20 +528,13 @@ def moorav():
 def calcular_moorav():
     try:
         # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
-        w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        # Divide las cadenas de texto en listas
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        w_input = request.form.get('w', '')  # Obtiene el valor de 'w' del formulario
+        w_values = w_input.split(",")  # Divide la cadena en valores individuales
+        w = [float(value.strip()) for value in w_values if value.strip()]  # Convierte cada valor a flotante
+        n = int(request.form['T'])#Iteraciones
 
         # Llama a la función de PSO en pso.py
-        datosMoorav = asyncio.run(ejecutar_moorav(w, wwi, c1, c2, T, r1, r2))
+        datosMoorav = asyncio.run(ejecutar_moorav(w,n))
         print("Resultados de la ejecución:", datosMoorav)
 
         # Obtén los resultados específicos que deseas mostrar

@@ -4,18 +4,20 @@
 # Actualización Feb 2024
 
 
-from flask import Flask
+import asyncio
+import datetime
+import math
 import random
 from decimal import Decimal
-import pandas as pd
-from openpyxl import load_workbook
-import xlsxwriter
-import matplotlib.pyplot as plt
-import math
-import datetime
-import asyncio
 
-async def ejecutar_moorav(w, wwi, c1, c2, T, r1, r2):
+import matplotlib.pyplot as plt
+import pandas as pd
+import xlsxwriter
+from flask import Flask
+from openpyxl import load_workbook
+
+
+async def ejecutar_moorav(w, n):
 
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
@@ -25,7 +27,7 @@ async def ejecutar_moorav(w, wwi, c1, c2, T, r1, r2):
     print("Construcción de la matriz de decisión")
     attributes = ["C1", "C2", "C3", "C4", "C5"]
     candidates = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9"]
-    n = 5
+    #n = 5
     a = 9
     raw_data = [
         [0.048, 0.047, 0.070, 0.087, 0.190],
@@ -52,7 +54,7 @@ async def ejecutar_moorav(w, wwi, c1, c2, T, r1, r2):
     print(EV,"\n")
 
     ### -- Pesos por cada criterio
-    w = [0.400, 0.200, 0.030, 0.070, 0.300]
+    #w = [0.400, 0.200, 0.030, 0.070, 0.300]
     #w = [0.300, 0.200, 0.200, 0.150, 0.150] 
     #w = [0.200, 0.200, 0.200, 0.200, 0.200]
     #w = [0.123, 0.099, 0.043, 0.343, 0.392]
