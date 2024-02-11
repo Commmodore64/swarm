@@ -4,13 +4,15 @@
 # Universidad Autónoma de ciudad Juárez
 # ACtualizado Feb-2024
 
-import pandas as pd
-import numpy as np
-from scipy.stats import rankdata
-import datetime
 import asyncio
+import datetime
 
-async def ejecutar_topsis(w, wwi, c1, c2, T, r1, r2):
+import numpy as np
+import pandas as pd
+from scipy.stats import rankdata
+
+
+async def ejecutar_topsis(w,n):
 
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
@@ -20,7 +22,7 @@ async def ejecutar_topsis(w, wwi, c1, c2, T, r1, r2):
     print("Construcción de la matriz de decisión" )
     attributes = ["C1", "C2", "C3", "C4", "C5"]
     candidates = ["A1", "A2", "A3", "A4", "A5", "A6","A7","A8","A9"]
-    n=5
+    #n=5
     a=9
     raw_data = [
         [0.048, 0.047, 0.070, 0.087, 0.190],
@@ -43,7 +45,7 @@ async def ejecutar_topsis(w, wwi, c1, c2, T, r1, r2):
     print("Controles iniciales" )
     print()
     print("Grado de preferencia para cada criterio")
-    w = [0.400, 0.200, 0.030, 0.070, 0.300]
+    #w = [0.400, 0.200, 0.030, 0.070, 0.300]
     #w = [0.300, 0.200, 0.200, 0.150, 0.150] #Original del artículo
     #w = [0.200, 0.200, 0.200, 0.200, 0.200]
     #w = [0.123, 0.099, 0.043, 0.343, 0.392]

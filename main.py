@@ -14,16 +14,15 @@ from flask_sqlalchemy import SQLAlchemy
 from numpy import ndarray
 from openpyxl import load_workbook
 
-#importacion de algoritmos
-from pso import ejecutar_pso
-from dapso import ejecutar_dapso
-from moorapso import ejecutar_moorapso
-from topsis import ejecutar_topsis
-from topsispso import ejecutar_topsispso
 from ba import ejecutar_ba
 from daba import ejecutar_daba
-from topsis import ejecutar_topsis
+from dapso import ejecutar_dapso
+from moorapso import ejecutar_moorapso
 from moorav import ejecutar_moorav
+#importacion de algoritmos
+from pso import ejecutar_pso
+from topsis import ejecutar_topsis
+from topsispso import ejecutar_topsispso
 
 db = SQLAlchemy()
 app = Flask(__name__)
@@ -465,19 +464,12 @@ def calcular_daba():
 def topsis():
     try:
         # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w_input = float(request.form.get('w', '')) 
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        n = int(request.form['T'])  #Iteraciones
         
         # Llama a la función de procesar_datos en pso.py
-        datosTopsis = asyncio.run(ejecutar_topsis(w, wwi, c1, c2, T, r1, r2))
+        datosTopsis = asyncio.run(ejecutar_topsis(w,n))
 
         return render_template('topsis.html', datosTopsis=datosTopsis)
     except Exception as e:
@@ -488,33 +480,27 @@ def topsis():
 def calcular_topsis():
     try:
         # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
-        w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        # Divide las cadenas de texto en listas
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        w_input = request.form.get('w', '')  # Obtiene el valor de 'w' del formulario
+        w_values = w_input.split(",")  # Divide la cadena en valores individuales
+        w = [float(value.strip()) for value in w_values if value.strip()]  # Convierte cada valor a flotante
+
+        n = int(request.form.get('T', ''))  # Obtiene el valor de 'T' del formulario como entero
+
+        # Verifica si w o n no se proporcionaron correctamente
+        if not w or n is None:
+            return jsonify({'error': 'Los datos de entrada no fueron proporcionados correctamente'}), 400
 
         # Llama a la función de PSO en pso.py
-        datosTopsis = asyncio.run(ejecutar_topsis(w, wwi, c1, c2, T, r1, r2))
+        datosTopsis = asyncio.run(ejecutar_topsis(w, n))
         print("Resultados de la ejecución:", datosTopsis)
 
-        # Obtén los resultados específicos que deseas mostrar
-        # dataGBP = resultados['dataGBP']
-        # dataGBF = resultados['dataGBF']
-        # dataResult = resultados['dataResult']
-
-        # Puedes hacer lo que quieras con los resultados, por ejemplo, pasarlos al template
+        # Devuelve los resultados
         return jsonify(datosTopsis)
     except Exception as e:
-        # Manejo de errores, por ejemplo, mostrar un mensaje de error en la interfaz
-       print(f'Error en calcular_topsis: {str(e)}')
-    return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
+        print(f'Error en calcular_topsis: {str(e)}')
+        return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
+
+
 #-------------------------------------------------------------------------------------------------------------------
 
 
@@ -525,7 +511,7 @@ def calcular_topsis():
 def moorav():
     try:
         # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w_input = float(request.form.get('w', '')) 
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
         wwi = float(request.form['wwi'])
         c1 = float(request.form['c1'])
