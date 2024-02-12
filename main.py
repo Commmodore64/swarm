@@ -38,7 +38,11 @@ class SupaUser(db.Model):
     emaildb = db.Column(db.String, nullable=False)
     passworddb = db.Column(db.String, nullable=False)
     
-    
+                    #Acerca de
+#-------------------------------------------------------------------------------------------------------------------
+@app.route('/acercade')
+def acercade():
+    return render_template('acercade.html')
                 #Algoritmos PSO
 #-------------------------------------------------------------------------------------------------------------------
 @app.route('/pso')
