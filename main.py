@@ -278,7 +278,7 @@ def calcular_topsispso():
 #-------------------------------------------------------------------------------------------------------------------
 
 
-@app.route('/comparacion')
+@app.route('/comparacionPso')
 def comparacion():
     try:
         # Obtén los datos del formulario
@@ -299,12 +299,12 @@ def comparacion():
         datosMoorapso = asyncio.run(ejecutar_moorapso(w, wwi, c1, c2, T, r1, r2))
         datosTopsispso = asyncio.run(ejecutar_topsispso(w, wwi, c1, c2, T, r1, r2))
 
-        return render_template('comparacion.html', datosPso=datosPso, datosDapso = datosDapso , datosMoorapso = datosMoorapso, datosTopsispso = datosTopsispso)
+        return render_template('comparacionPso.html', datosPso=datosPso, datosDapso = datosDapso , datosMoorapso = datosMoorapso, datosTopsispso = datosTopsispso)
     except Exception as e:
-        return render_template('comparacion.html', error_message=str(e))
+        return render_template('comparacionPso.html', error_message=str(e))
 
 
-@app.route('/comparacion', methods=['POST'])
+@app.route('/comparacionPso', methods=['POST'])
 def calcular_comparacion():
     try:
         # Obtén los datos del formulario
@@ -459,6 +459,69 @@ def calcular_daba():
        print(f'Error en calcular_daba: {str(e)}')
     return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
 #-------------------------------------------------------------------------------------------------------------------
+@app.route('/comparacionBa')
+def comparacionBa():
+    try:
+        # Obtén los datos del formulario
+        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
+        wwi = float(request.form['wwi'])
+        c1 = float(request.form['c1'])
+        c2 = float(request.form['c2'])
+        T = int(request.form['T'])
+        r1_input = request.form['r1']
+        r2_input = request.form['r2']
+        r1 = [float(num.strip()) for num in r1_input.split(',')]
+        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        
+        # Llama a la función de procesar_datos en pso.py
+        datosBa = asyncio.run(ejecutar_ba(w, wwi, c1, c2, T, r1, r2))
+        datosDaba = asyncio.run(ejecutar_daba(w, wwi, c1, c2, T, r1, r2))
+        datosMoorapso = asyncio.run(ejecutar_moorapso(w, wwi, c1, c2, T, r1, r2))
+        datosTopsispso = asyncio.run(ejecutar_topsispso(w, wwi, c1, c2, T, r1, r2))
+
+        return render_template('comparacionBa.html', datosPso=datosBa, datosDapso = datosDaba , datosMoorapso = datosMoorapso, datosTopsispso = datosTopsispso)
+    except Exception as e:
+        return render_template('comparacionBa.html', error_message=str(e))
+
+
+@app.route('/comparacionBa', methods=['POST'])
+def calcular_comparacionBa():
+    try:
+        # Obtén los datos del formulario
+        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
+        wwi = float(request.form['wwi'])
+        c1 = float(request.form['c1'])
+        c2 = float(request.form['c2'])
+        T = int(request.form['T'])
+        # Divide las cadenas de texto en listas
+        r1_input = request.form['r1']
+        r2_input = request.form['r2']
+        r1 = [float(num.strip()) for num in r1_input.split(',')]
+        r2 = [float(num.strip()) for num in r2_input.split(',')]
+
+        # Llama a la función de PSO en pso.py
+        datosBa = asyncio.run(ejecutar_ba(w, wwi, c1, c2, T, r1, r2))
+        datosDaba = asyncio.run(ejecutar_daba(w, wwi, c1, c2, T, r1, r2))
+        datosMoorapso = asyncio.run(ejecutar_moorapso(w, wwi, c1, c2, T, r1, r2))
+        datosTopsispso = asyncio.run(ejecutar_topsispso(w, wwi, c1, c2, T, r1, r2))
+        print("Resultados de la ejecución:", datosBa) 
+        print("Resultados de la ejecución:", datosDaba) 
+        print("Resultados de la ejecución:", datosMoorapso) 
+        print("Resultados de la ejecución:", datosTopsispso) 
+
+        # Obtén los resultados específicos que deseas mostrar
+        # dataGBP = resultados['dataGBP']
+        # dataGBF = resultados['dataGBF']
+        # dataResult = resultados['dataResult']
+
+        # Puedes hacer lo que quieras con los resultados, por ejemplo, pasarlos al template
+        return jsonify(datosBa, datosDaba, datosMoorapso, datosTopsispso)
+    except Exception as e:
+        # Manejo de errores, por ejemplo, mostrar un mensaje de error en la interfaz
+       print(f'Error en calcular_comparacion: {str(e)}')
+    return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
 
 
 #-------------------------------------------------------------------------------------------------------------------

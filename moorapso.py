@@ -828,7 +828,7 @@ async def ejecutar_moorapso(w, wwi, c1, c2, T, r1, r2):
             dataGBP = pd.DataFrame(GBP)
             dataResult = pd.DataFrame(Resultados)
             dataResultM = pd.DataFrame(ResultadosMoora)
-            alternativas = Resultados[-5:]
+            alternativas = Resultados[-10:]
             hora_fin = datetime.datetime.now()
 
         with pd.ExcelWriter('Experimentos2/MOORAPSO.xlsx', engine='xlsxwriter') as writer:

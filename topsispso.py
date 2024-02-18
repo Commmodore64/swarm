@@ -727,7 +727,7 @@ async def ejecutar_topsispso(w,wwi,c1,c2,T,r1,r2):
     dataAlt = pd.DataFrame(Alt)
     dataw = pd.DataFrame(w)
     dataResult = pd.DataFrame(Resultados)
-    alternativas = Resultados[-5:]
+    alternativas = Resultados[-10:]
     hora_fin = datetime.datetime.now()
 
 

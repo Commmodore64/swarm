@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     
-    const ejecutarComparacion = document.getElementById('ejecutarComparacion');
-    const formularioComparacion = document.getElementById('comparacionForm');
+    const ejecutarComparacion = document.getElementById('ejecutarComparacionPso');
+    const formularioComparacion = document.getElementById('comparacionFormPso');
     
     ejecutarComparacion.addEventListener('click', function () {
         console.log('Ejecutar Comparacion clicked');

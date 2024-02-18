@@ -105,7 +105,7 @@
     <a href="/topsispso" class="text-lg p-8 transition-all duration-100 ease-in-out hover:font-bold nav-link">
       TOPSIS - PSO
     </a>
-    <a href="/comparacion" class="text-lg p-8 transition-all duration-100 ease-in-out hover:font-bold nav-link">
+    <a href="/comparacionPso" class="text-lg p-8 transition-all duration-100 ease-in-out hover:font-bold nav-link">
       COMPARACIÓN
     </a>
   </div>
@@ -181,7 +181,7 @@
             <div>
               <label class="block mb-2 text-sm font-medium text-gray-900">Cantidad de Iteraciones:
               </label>
-              <input type="number" step="any" value="5" id="T" name="T"
+              <input type="number" step="any" value="10" id="T" name="T"
                 class="text-center bg-slate-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 pattern="" required />
             </div>
@@ -220,7 +220,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {% for i in range (5) %}
+                  {% for i in range (10) %}
                   <tr>
                     <td class="border border-slate-300 text-center align-middle">
                       {{ i + 1 }}

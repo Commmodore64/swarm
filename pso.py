@@ -465,7 +465,7 @@ async def ejecutar_pso(w, wwi, c1, c2, T, r1, r2):
     #alternativas = [Resultados[0], Resultados[1], Resultados[2], Resultados[3], Resultados[4]]
     #alternativas = Resultados
     #alternativas = alternativas.sort(reverse=True)
-    alternativas = Resultados[-5:]
+    alternativas = Resultados[-10:]
     hora_fin = datetime.datetime.now()
 
     

@@ -90,9 +90,8 @@ async def ejecutar_moorav(w, n):
     print("\nClasificación Final:")
     print(RankFin)
 
-    arreglo = ranked_alternatives.index[-5:]
-    arregloInvertido = tuple(reversed(arreglo))
-    print(arregloInvertido)
+    arreglo = ranked_alternatives.index[-10:]
+    arregloInvertido = tuple((arreglo))
     alternativas = arregloInvertido
 
     print("La mejor solución es la alternativa:", RankFin.iloc[0]['Alternativa'], "con una puntuación global de:", RankFin.iloc[0]['Puntuación Global'])

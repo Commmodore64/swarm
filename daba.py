@@ -748,7 +748,7 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
     datarnd= pd.DataFrame(rnd)
     #dataFmin= pd.DataFrame(FuncObj)
     #dataFmax= pd.DataFrame(IF_max)
-    alternativas = Resultados[-5:]
+    alternativas = Resultados[-10:]
     
 
     with pd.ExcelWriter('Experimentos2/DABA.xlsx', engine='xlsxwriter') as writer:

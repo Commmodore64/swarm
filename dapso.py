@@ -662,7 +662,7 @@ async def ejecutar_dapso(w, wwi, c1, c2, T, r1, r2):
     dataAlt = pd.DataFrame(Alt)
     dataw = pd.DataFrame(w)
     dataResult = pd.DataFrame(Resultados)
-    alternativas = Resultados[-5:]
+    alternativas = Resultados[-10:]
     hora_fin = datetime.datetime.now()
 
     with pd.ExcelWriter('Experimentos2/DAPSO.xlsx', engine='xlsxwriter') as writer:

@@ -140,8 +140,10 @@ async def ejecutar_topsis(w,n):
     # PAra almacenar tiempo de ejecución
     hora_fin = datetime.datetime.now()
     ejecut=hora_fin-hora_inicio
-    alternativas = Alt[:5]
-    print(alternativas)
+    
+    arreglo = ranked_candidates.index[-10:]
+    arregloInvertido = tuple((arreglo))
+    alternativas = arregloInvertido
 
     # PAra guardar información en archivo de EXCEl
     dT= {"Algoritmo": ["TOPSIS"],
