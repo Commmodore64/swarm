@@ -43,6 +43,9 @@ class SupaUser(db.Model):
 @app.route('/acercade')
 def acercade():
     return render_template('acercade.html')
+@app.route('/casoexperimental')
+def casoexperimental():
+    return render_template('casoexperimental.html')
                 #Algoritmos PSO
 #-------------------------------------------------------------------------------------------------------------------
 @app.route('/pso')

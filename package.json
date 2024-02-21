@@ -20,6 +20,7 @@
     "braces": "^3.0.2",
     "camelcase-css": "^2.0.1",
     "chokidar": "^3.5.3",
+    "clsx": "^2.1.0",
     "commander": "^4.1.1",
     "concat-map": "^0.0.1",
     "cssesc": "^3.0.0",
