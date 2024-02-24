@@ -23,6 +23,7 @@ from moorav import ejecutar_moorav
 from pso import ejecutar_pso
 from topsis import ejecutar_topsis
 from topsispso import ejecutar_topsispso
+from da import ejecutar_da
 
 db = SQLAlchemy()
 app = Flask(__name__)
@@ -462,6 +463,65 @@ def calcular_daba():
        print(f'Error en calcular_daba: {str(e)}')
     return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
 #-------------------------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------------------------------------
+        #Algoritmo_Ruta MOORA - BA
+
+@app.route('/mooraba')
+def mooraba():
+    try:
+        # Obtén los datos del formulario
+        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
+        wwi = float(request.form['wwi'])
+        c1 = float(request.form['c1'])
+        c2 = float(request.form['c2'])
+        T = int(request.form['T'])
+        r1_input = request.form['r1']
+        r2_input = request.form['r2']
+        r1 = [float(num.strip()) for num in r1_input.split(',')]
+        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        
+        # Llama a la función de procesar_datos en pso.py
+        datosMooraba = asyncio.run(ejecutar_mooraba(w, wwi, c1, c2, T, r1, r2))
+
+        return render_template('mooraba.html', datosMooraba=datosMooraba)
+    except Exception as e:
+        return render_template('mooraba.html', error_message=str(e))
+
+
+@app.route('/mooraba', methods=['POST'])
+def calcular_mooraba():
+    try:
+        # Obtén los datos del formulario
+        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
+        wwi = float(request.form['wwi'])
+        c1 = float(request.form['c1'])
+        c2 = float(request.form['c2'])
+        T = int(request.form['T'])
+        # Divide las cadenas de texto en listas
+        r1_input = request.form['r1']
+        r2_input = request.form['r2']
+        r1 = [float(num.strip()) for num in r1_input.split(',')]
+        r2 = [float(num.strip()) for num in r2_input.split(',')]
+
+        # Llama a la función de PSO en pso.py
+        datosMooraba = asyncio.run(ejecutar_mooraba(w, wwi, c1, c2, T, r1, r2))
+        print("Resultados de la ejecución:", datosMooraba)
+
+        # Obtén los resultados específicos que deseas mostrar
+        # dataGBP = resultados['dataGBP']
+        # dataGBF = resultados['dataGBF']
+        # dataResult = resultados['dataResult']
+
+        # Puedes hacer lo que quieras con los resultados, por ejemplo, pasarlos al template
+        return jsonify(datosMooraba)
+    except Exception as e:
+        # Manejo de errores, por ejemplo, mostrar un mensaje de error en la interfaz
+       print(f'Error en calcular_mooraba: {str(e)}')
+    return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
+#-------------------------------------------------------------------------------------------------------------------
 @app.route('/comparacionBa')
 def comparacionBa():
     try:
@@ -526,7 +586,8 @@ def calcular_comparacionBa():
        print(f'Error en calcular_comparacion: {str(e)}')
     return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
 
-
+#-------------------------------------------------------------------------------------------------------------------
+        #Algoritmos MCDM
 #-------------------------------------------------------------------------------------------------------------------
         #Algoritmo_Ruta TOPSIS
 
@@ -617,6 +678,52 @@ def calcular_moorav():
     except Exception as e:
         # Manejo de errores, por ejemplo, mostrar un mensaje de error en la interfaz
        print(f'Error en calcular_moorav: {str(e)}')
+    return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
+#-------------------------------------------------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------------------------------------------
+        #Algoritmo_Ruta MOORAV
+
+@app.route('/da')
+def da():
+    try:
+        # Obtén los datos del formulario
+        w_input = request.form.get('w', '')  # Obtiene el valor de 'w' del formulario
+        w_values = w_input.split(",")  # Divide la cadena en valores individuales
+        w = [float(value.strip()) for value in w_values if value.strip()]  # Convierte cada valor a flotante
+        n = int(request.form['T'])
+        
+        # Llama a la función de procesar_datos en pso.py
+        datosDa = asyncio.run(ejecutar_da(w,n))
+
+        return render_template('da.html', datosDa=datosDa)
+    except Exception as e:
+        return render_template('da.html', error_message=str(e))
+
+
+@app.route('/da', methods=['POST'])
+def calcular_da():
+    try:
+        # Obtén los datos del formulario
+        w_input = request.form.get('w', '')  # Obtiene el valor de 'w' del formulario
+        w_values = w_input.split(",")  # Divide la cadena en valores individuales
+        w = [float(value.strip()) for value in w_values if value.strip()]  # Convierte cada valor a flotante
+        n = int(request.form['T'])#Iteraciones
+
+        # Llama a la función de PSO en pso.py
+        datosDa = asyncio.run(ejecutar_da(w,n))
+        print("Resultados de la ejecución:", datosDa)
+
+        # Obtén los resultados específicos que deseas mostrar
+        # dataGBP = resultados['dataGBP']
+        # dataGBF = resultados['dataGBF']
+        # dataResult = resultados['dataResult']
+
+        # Puedes hacer lo que quieras con los resultados, por ejemplo, pasarlos al template
+        return jsonify(datosDa)
+    except Exception as e:
+        # Manejo de errores, por ejemplo, mostrar un mensaje de error en la interfaz
+       print(f'Error en calcular_Da: {str(e)}')
     return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
 #-------------------------------------------------------------------------------------------------------------------
 @app.route('/index', methods=['POST'])

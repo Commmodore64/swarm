@@ -9,7 +9,7 @@ import datetime
 import math
 import random
 from decimal import Decimal
-
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import xlsxwriter
@@ -21,13 +21,12 @@ async def ejecutar_moorav(w, n):
 
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
-
     print()
     print("-------------------------------------------")
     print("Construcción de la matriz de decisión")
     attributes = ["C1", "C2", "C3", "C4", "C5"]
     candidates = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9"]
-    #n = 5
+    n = n
     a = 9
     raw_data = [
         [0.048, 0.047, 0.070, 0.087, 0.190],
@@ -42,8 +41,8 @@ async def ejecutar_moorav(w, n):
     ]
 
     # Mostrar los datos sin procesar que tenemos
-    A1 = pd.DataFrame(data=raw_data, index=candidates, columns=attributes)
-    print(A1)
+    x = pd.DataFrame(data=raw_data, index=candidates, columns=attributes)
+    print(x)
 
     #############################################################################################
     print("\n-------------------------------------------")
@@ -54,7 +53,7 @@ async def ejecutar_moorav(w, n):
     print(EV,"\n")
 
     ### -- Pesos por cada criterio
-    #w = [0.400, 0.200, 0.030, 0.070, 0.300]
+    w = [0.400, 0.200, 0.030, 0.070, 0.300]
     #w = [0.300, 0.200, 0.200, 0.150, 0.150] 
     #w = [0.200, 0.200, 0.200, 0.200, 0.200]
     #w = [0.123, 0.099, 0.043, 0.343, 0.392]
@@ -62,8 +61,17 @@ async def ejecutar_moorav(w, n):
     print(weights,"\n")
 
     ### -- Normalizamos con distancia euclidiana
-    normalized_data = A1.div(A1.sum(axis=0), axis=1)
-    print("Matriz de datos normalizados:")
+    # Calcular la suma de los cuadrados de cada fila
+    squared_sum = (x ** 2).sum(axis=1)
+    print("squared_sum",squared_sum)
+
+    # Calcular la raíz cuadrada de la suma de cuadrados
+    norm_factor = np.sqrt(squared_sum)
+    print("norm_factor",norm_factor)
+
+    # Normalizar dividiendo cada valor por la raíz cuadrada correspondiente
+    normalized_data = x.div(norm_factor, axis=0)
+    print("\n Matriz de datos normalizados (distancia euclidiana):")
     print(normalized_data)
 
     ### -- Ponderamos la matriz normalizada por los pesos de los criterios
@@ -71,15 +79,20 @@ async def ejecutar_moorav(w, n):
     print("\nMatriz de datos ponderados:")
     print(weighted_data)
 
-    ### -- Obtenemos la evaluación de cada alternativa 
-    global_scores = weighted_data.sum(axis=1) #Puntuación Global
-    print("\nPuntuación global para cada alternativa:")
+    ### -- Cálculo de la puntuación de cada alternativa:
+    if "Min" in EV:
+        global_scores = weighted_data.min(axis=1)  # Evaluación mínima
+    else:
+        global_scores = weighted_data.max(axis=1)  # Evaluación máxima
+        
+    print("\nEvaluación de cada alternativa:")
     print(global_scores)
 
     ### -- Clasificación de alternativas
     ranked_alternatives = global_scores.sort_values(ascending=False)
-    #print("\nClasificación de alternativas:")
-    #print(ranked_alternatives)
+    print("\nClasificación de alternativas:")
+    print(ranked_alternatives)
+
 
     #####################################################################################
     ### -- Crear DataFrame para clasificación final
@@ -90,21 +103,19 @@ async def ejecutar_moorav(w, n):
     print("\nClasificación Final:")
     print(RankFin)
 
-    arreglo = ranked_alternatives.index[-10:]
-    arregloInvertido = tuple((arreglo))
-    alternativas = arregloInvertido
-
-    print("La mejor solución es la alternativa:", RankFin.iloc[0]['Alternativa'], "con una puntuación global de:", RankFin.iloc[0]['Puntuación Global'])
+    print("\nLa mejor solución es la alternativa:", RankFin.iloc[0]['Alternativa'], "con una puntuación global de:", RankFin.iloc[0]['Puntuación Global'])
 
 
     #####################################################################################
     # Para almacenar tiempo de ejecución
     hora_fin = datetime.datetime.now()
     ejecut = hora_fin - hora_inicio
-    
+    arreglo = ranked_alternatives.index[-10:]
+    arregloInvertido = tuple((arreglo))
+    alternativas = arregloInvertido
 
     # Para guardar información en archivo de EXCEl
-    dT = {"Algoritmo": ["TOPSIS"],
+    dT = {"Método": ["MOORA"],
         "Hora de inicio": [hora_inicio.time()],
         "Fecha de inicio": [fecha_inicio],
         "Hora de finalización": [hora_fin.time()],
@@ -113,22 +124,31 @@ async def ejecutar_moorav(w, n):
     dataT = pd.DataFrame(dT)
     dataAlt = pd.DataFrame(RankFin)
     dataw = pd.DataFrame(w)
+    dataND = pd.DataFrame(normalized_data)
+    datawd= pd.DataFrame(weighted_data)
+    datags= pd.DataFrame(global_scores)
+
 
     with pd.ExcelWriter('Experimentos2/MOORA.xlsx', engine='xlsxwriter') as writer:
         dataT.to_excel(writer, sheet_name='Tiempos')
         dataw.to_excel(writer, sheet_name='w')
-        A1.to_excel(writer, sheet_name='Matriz')
+        x.to_excel(writer, sheet_name='Matriz_decisión')
+        dataND.to_excel(writer, sheet_name='Matriz_normaliza')
+        datawd.to_excel(writer, sheet_name='Matriz_ponderadss')
+        datags.to_excel(writer, sheet_name='Evaluación_cada_alternativa')
         dataAlt.to_excel(writer, sheet_name='Ranking_alternativas')
 
-    print('Datos guardados el archivo:MOORA.xlsx')
+
+    print('\n Datos guardados el archivo:MOORA.xlsx')
     print()
 
     # Imprimimos los resultados de tiempo
-    print("Algoritmo MOORA")
+    print("Método MOORA")
     print("Hora de inicio:", hora_inicio.time())
     print("Fecha de inicio:", fecha_inicio)
     print("Hora de finalización:", hora_fin.time())
     print("Tiempo de ejecución:", ejecut)
+    print()
 
     await asyncio.sleep(0.1)
 

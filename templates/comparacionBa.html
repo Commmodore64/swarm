@@ -322,7 +322,7 @@
                   />
                 </div>
                 <div>
-                  <label class="block mt-5 mb-2 text-sm font-medium text-gray-900"
+                  <!-- <label class="block mt-5 mb-2 text-sm font-medium text-gray-900"
                     >Función objetivo:
                   </label>
                   <input
@@ -331,7 +331,7 @@
                     disabled
                     class="text-center bg-slate-300 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                     pattern=""
-                  />
+                  /> -->
                 </div>
                 <button
                   type="button"
@@ -349,7 +349,7 @@
             <div class="max-w-2xl mx-auto bg-white p-8">
               <form class="rounded-xl bg-white px-8 py-10 shadow-2xl">
                 <h1 class="font-bold mb-1 text-xl">BA</h1>
-                <h2 class="font-semibold mb-3">Resultados finales</h2>
+                <h2 class="font-semibold mb-3">Últimos 10 resultados</h2>
                 <div class="overflow-y-auto h-full">
                   <table
                     class="w-full table-auto border-separate border border-slate-400"
@@ -370,7 +370,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      {% for i in range (5) %}
+                      {% for i in range (10) %}
                       <tr>
                         <td
                           class="border border-slate-300 text-center align-middle"
@@ -392,7 +392,7 @@
               </form>
                 <form class="rounded-xl bg-white px-8 py-10 shadow-2xl mt-10">
                   <h1 class="font-bold mb-1 text-xl">DA-BA (Ejemplo)</h1>
-                  <h2 class="font-semibold mb-3">Resultados finales</h2>
+                  <h2 class="font-semibold mb-3">Últimos 10 resultados</h2>
                 <div class="overflow-y-auto h-full">
                   <table
                     class="w-full table-auto border-separate border border-slate-400"
@@ -413,7 +413,7 @@
                       </tr>
                     </thead>
                     <tbody>
-                      {% for i in range (5) %}
+                      {% for i in range (10) %}
                       <tr>
                         <td
                           class="border border-slate-300 text-center align-middle"
