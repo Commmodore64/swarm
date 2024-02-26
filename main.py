@@ -24,6 +24,7 @@ from pso import ejecutar_pso
 from topsis import ejecutar_topsis
 from topsispso import ejecutar_topsispso
 from da import ejecutar_da
+from mooraba import ejecutar_Mooraba
 
 db = SQLAlchemy()
 app = Flask(__name__)
@@ -483,7 +484,7 @@ def mooraba():
         r2 = [float(num.strip()) for num in r2_input.split(',')]
         
         # Llama a la función de procesar_datos en pso.py
-        datosMooraba = asyncio.run(ejecutar_mooraba(w, wwi, c1, c2, T, r1, r2))
+        datosMooraba = asyncio.run(ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2))
 
         return render_template('mooraba.html', datosMooraba=datosMooraba)
     except Exception as e:
@@ -507,7 +508,7 @@ def calcular_mooraba():
         r2 = [float(num.strip()) for num in r2_input.split(',')]
 
         # Llama a la función de PSO en pso.py
-        datosMooraba = asyncio.run(ejecutar_mooraba(w, wwi, c1, c2, T, r1, r2))
+        datosMooraba = asyncio.run(ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2))
         print("Resultados de la ejecución:", datosMooraba)
 
         # Obtén los resultados específicos que deseas mostrar
