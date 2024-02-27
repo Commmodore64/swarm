@@ -1,19 +1,25 @@
-from flask import Flask
+# Experimento MOORA-BA
+# Doctorado en Tecnología
+# Universidad Autónoma de ciudad Juárez
+# Actualización 24-Feb-2024
+
+import asyncio
+import datetime
+import math
+import os
 import random
 from decimal import Decimal
-import pandas as pd
-import numpy as np
-from openpyxl import load_workbook
-import xlsxwriter
-import matplotlib.pyplot as plt
-import math
-import datetime
 from math import e
-import asyncio
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import xlsxwriter
+from flask import Flask
+from openpyxl import load_workbook
 
 
-async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
-
+async def ejecutar_Mooraba(w, alpha, gamma, iter_max):
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
     Resultados=[]
@@ -49,22 +55,12 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
 
     # Mostrar los datos sin procesar que tenemos
     x = pd.DataFrame(data=raw_data, index=candidates, columns=attributes)
-
-
-    print(x)
+    print(x,"\n")
 
 
     #-------------- Velocidad inicial
-    v = pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-    #for i in range(n):
-    #    Vram1=[]
-    #    for j in range(d):
-    #        Vram=random.uniform(0,1)
-            #print("Vram",Vram)
-    #        Vram1.append(round((float(Vram)),3))
-    #    Ver1 = pd.DataFrame({'C1':[Vram1[0]],'C2':[Vram1[1]],'C3':[Vram1[2]],'C4':[Vram1[3]],'C5':[Vram1[4]]})
-    #    v = pd.concat([v,Ver1], ignore_index=True)
-    v=x
+    data = np.random.uniform(0, 1, size=(n, d)).round(3)
+    v = pd.DataFrame(data, columns=attributes, index=candidates)
     print("\n Velocidad inicial=")
     print(v,"\n")
 
@@ -74,6 +70,7 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
 
     # Contien las evaluaciones cardinales de cada alternativa respecto a cada criterio
     EV = ["Min", "Min", "Min", "Min", "Min"]
+    #EV = ["Max","Max","Max","Max","Max"]
     #print("Evaluaciones cardinales de cada alternativa respecto a cada criterio:")
     #print(EV,"             \n")
 
@@ -90,17 +87,12 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
 
     # ----Iteraciones
     #iter_max = int(input("\n""Ingrese el numero de iteraciones maximas: \n"))
-    iter_max = 100
+    iter_max = 10
 
     # ----Tasa de pulso (Pulse rate) 
     #Valores para tasa de pulso [0,1]
     #print("Ingrese los valores iniciales para ri / Pulse emission: [0,1]")
     ri=[]  
-    #for a in range (n):
-        #ri0 = float(input("BAT" + " " + str(a+1) + "\n"))
-    #     ri0=0.1
-    #     ri.append(ri0)
-    #ri=pd.Series(ri)
     ri = pd.Series(np.random.rand(n))
     ri_ini=ri
     #print(ri)
@@ -110,10 +102,6 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
     #         Valores sonoridad [1,2]
     #print("\n""Ingrese los valores iniciales para la sonoridad Ai / Loudness: [1,2]")
     ai=[]   
-    #for b in range (n):
-        #ai0 = float(input("BAT" + " " + str(b+1) + "\n"))
-    #     ai0 = 0.95
-    #     ai.append(ai0)
     ai = pd.Series(np.random.uniform(1,2, size=n))
     ai_ini=ai
     #ai=pd.Series(ai)
@@ -160,7 +148,7 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
     print(f)
     print("\n Valores Aleatorios")
     print(rnd)
-    print("--------------------------------------------------  \n")
+    #print("--------------------------------------------------  \n")
 
 
     ######################################################################################################################################################
@@ -169,8 +157,8 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
     # Iteración
     it = 0
     ResultadosMOORA = []
-    global_best=pd.DataFrame(columns={'C1','C2','C3','C4','C5'})
-    CCB = pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
+    global_best=pd.DataFrame(columns=attributes)
+    CCB = pd.DataFrame(columns=attributes)
 
     while it < iter_max:
         print('\n =======================================================')
@@ -210,11 +198,19 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
 
         ### -- Cálculo de la puntuación de cada alternativa:
         FuncObj=[]
-        if "Min" in EV:
-            global_scores = weighted_data.min(axis=1)  # Evaluación mínima
-        else:
-            global_scores = weighted_data.max(axis=1)  # Evaluación máxima
-        
+        global_scores = [] ## Crear una lista para almacenar los resultados
+        for idx, row in weighted_data.iterrows():
+            score = 0  # Inicializamos la puntuación para esta fila
+            # Iteramos sobre cada valor en la fila y su correspondiente en 'EV'
+            for value, ev_value in zip(row, EV):
+                # Sumamos o restamos según el valor en 'EV'
+                if ev_value == "Max":
+                    score += value
+                else:
+                    score -= value
+            # Agregamos la puntuación final para esta fila a la lista de resultados
+            global_scores.append(score)
+        global_scores = pd.Series(global_scores) #Convertir la lista de resultados en una Serie de pandas   
         #print("\nEvaluación de cada alternativa:")
         #print(global_scores)
 
@@ -234,21 +230,23 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
         # Mejor posición local
         # 1) 
         FuncObj=RankFin['Puntuación Global'].round(6).tolist() 
-        print("\n --------------------------------------------------")
-        print("  Función objetivo= \n",FuncObj)
+        #print("\n --------------------------------------------------")
+        #print("  Función objetivo= \n",FuncObj)
         # 2) se asigna el mejor función objetivo
-        IF_maxt=RankFin.iloc[0]['Alternativa']
-        Mejor=IF_maxt
-        #print("\n Función objetivo(min)= \n",IF_maxt)
+        #IF_maxt=int(RankFin.iloc[0]['Alternativa'])
+        IF_maxt=(RankFin.iat[0,1])# guarda la alternativa, para usar el index en la matriz original (este listado inicia en 0, por lo que no se requiere restar un 1)
+        Mejor=IF_maxt 
+        #print("\n Index de la Función objetivo(min)= \n",IF_maxt) # los valores inician en 0
 
         print("\n--------------------------------------------------")
-        print("La mejor solución es la alternativa:", RankFin.iloc[0]['Alternativa'], "con una puntuación global de:", RankFin.iloc[0]['Puntuación Global'])
+        print("La mejor solución es la alternativa: A", (RankFin.iloc[0]['Alternativa'])-1, "con una puntuación global de:", RankFin.round(6).iloc[0]['Puntuación Global'])
         
         #print("xlen",xlen)
-        selected_row = xlen.loc[IF_maxt]
-        #print(selected_row)
-        global_best =pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-        global_best.loc[IF_maxt] = selected_row
+        selected_row = xlen.iloc[IF_maxt]
+        #print(selected_row.tolist())
+        global_best =pd.DataFrame(columns=attributes)
+        global_best = selected_row
+        #print("\nEl mejor global local: ", global_best.tolist(), "\n")
         print("\nEl mejor global local: ")
         print(global_best, "\n")
 
@@ -297,20 +295,27 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
         # Vi = Velocidad inicial + (Posición actual - Mejor_posición) * Frecuencia
         v_actual=len(v)-n
         x_actual=len(x)-n
+        #print("x", x)
+        #print("x", x_actual)
+        #print("v", v)
+        #print("v", v_actual)
+        #print("global_best")
+        #print(global_best)
         
         for i in range(n):#n alternativas
             VAct=[]
             f_actual=len(f)-1
-            global_actual=len(global_best)-1
+            gb_actual=len(global_best)-1
 
             for j in range(d): #dcriterios
-
                 # Vi = Velocidad inicial + (Posición actual - Mejor_posición) * Frecuencia
+                
                 #print("     x.iat[i,j]",x.iat[x_actual,j])
                 #print("     v.iat[i,j]",v.iat[v_actual,j])
                 #print("     f.iat[f_actual,i]",f.iat[f_actual,j])
-                #print("     global_best.iat[0,i]",global_best.iat[global_actual,j])
-                VAct1 = v.iat[v_actual,j] + (x.iat[x_actual,j] - global_best.iat[global_actual,j]) * f.iat[f_actual,j]
+                #print("     global_best.iat[f_actual,i]",global_best.iat[j])
+
+                VAct1 = v.iat[v_actual,j] + (x.iat[x_actual,j] - global_best.iat[j]) * f.iat[f_actual,j]
                 VAct.append(round((float(VAct1)),3))
                         
                 #print(v.iat[j,v_actual],"+ (", x.iat[j,x_actual], "-", global_best.iat[global_actual,i], ")*", f.iat[f_actual,i])
@@ -347,10 +352,11 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
             #print("XAct", XAct)
             #print("-------")
 
-            x_actual=x_actual+1
-            v_actual=v_actual+1
+            x_actual += 1
+            v_actual += 1
 
             Ver2 = pd.DataFrame({'C1':[XAct[0]],'C2':[XAct[1]],'C3':[XAct[2]],'C4':[XAct[3]],'C5':[XAct[4]]})
+            # Ver2 = pd.DataFrame({f'C{i+1}': [XAct[i] for i in range(d)]})
             x = pd.concat([x,Ver2], ignore_index=True)
         print("\n Posición actualizada")
         #print(x)
@@ -429,7 +435,7 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
                     #print("      Posición = ",rrtP3)
 
                     #global_best
-                    rrtP7 = float(global_best.iat[0,j])
+                    rrtP7 = float(global_best.iat[j])
                     #print("   global_best = ",rrtP7)
 
                     #Nueva_frecuencia
@@ -449,8 +455,8 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
 
                 #print("x_newFIN",xx1)
                 #print("v_newFIN",xx2)
-                x_actual=x_actual+1
-                v_actual=v_actual+1
+                x_actual += 1
+                v_actual += 1
                 Xer1 = pd.DataFrame({'C1':[xx1[0]],'C2':[xx1[1]],'C3':[xx1[2]],'C4':[xx1[3]],'C5':[xx1[4]]})
                 x = pd.concat([x,Xer1], ignore_index=True)
                 Ver1 = pd.DataFrame({'C1':[xx2[0]],'C2':[xx2[1]],'C3':[xx2[2]],'C4':[xx2[3]],'C5':[xx2[4]]})
@@ -504,17 +510,26 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
 
         ### -- Cálculo de la puntuación de cada alternativa:
         FuncObjN=[]
-        if "Min" in EV:
-            global_scoresNW = weighted_dataNW.min(axis=1)  # Evaluación mínima
-        else:
-            global_scoresNW = weighted_dataNW.max(axis=1)  # Evaluación máxima
-
-        #print("\nEvaluación de cada alternativa:")
+        global_scoresNW = [] ## Crear una lista para almacenar los resultados
+        for idx, row in weighted_dataNW.iterrows():
+            scoreNW = 0  # Inicializamos la puntuación para esta fila
+            # Iteramos sobre cada valor en la fila y su correspondiente en 'EV'
+            for valueNW, ev_valueNW in zip(row, EV):
+                # Sumamos o restamos según el valor en 'EV'
+                if ev_valueNW == "Max":
+                    scoreNW += valueNW
+                else:
+                    scoreNW -= valueNW
+            # Agregamos la puntuación final para esta fila a la lista de resultados
+            global_scoresNW.append(scoreNW)
+        global_scoresNW = pd.Series(global_scoresNW) #Convertir la lista de resultados en una Serie de pandas
+            
+        print("\nEvaluación de cada alternativa:")
         #print(global_scoresNW)
 
         ### -- Clasificación de alternativas
         ranked_alternativesNW = global_scoresNW.sort_values(ascending=False)
-        #print("\nClasificación de alternativas:")
+        print("\nClasificación de alternativas:")
         #print(ranked_alternativesNW)
         
         
@@ -529,18 +544,21 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
         # Mejor posición local
         # 1) 
         FuncObjN=RankFinNW['Puntuación Global'].round(6).tolist() 
-        #print("\n Nueva Función objetivo= \n",FuncObjN)
+        print("\n Nueva Función objetivo= \n",FuncObjN)
         # 2) se asigna el mejor función objetivo
-        IF_maxtt=RankFinNW.iloc[0]['Alternativa']
+        IF_maxtt=int(RankFinNW.iloc[0]['Alternativa'])
         MejorNW=IF_maxtt
-        #print("\n Función objetivo(min)= \n",IF_maxtt)
+        print("\n Función objetivo(min)= \n",IF_maxtt)
         
-        selected_rowNW = xNW.loc[IF_maxtt]
+        #print("",xNW)
+        selected_rowNW = xNW.iloc[[IF_maxtt]]
         #print(selected_rowNW)
-        global_bestNW =pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-        global_bestNW.loc[IF_maxtt] = selected_rowNW
-        #print("\nNuevo mejor global local: ")
-        #print(global_bestNW, "\n")
+        global_bestNW =pd.DataFrame(columns=attributes)
+        global_bestNW= selected_rowNW
+        print("\nNuevo mejor global local: ")
+        print(global_bestNW, "\n")
+
+    
 
         
         # Mejor posición local y Función objetivo ( anterior y nueva)
@@ -555,6 +573,8 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
         print("Nueva posición local ")
         print("                       ",IF_maxtt)
         print(" -----------------------------------------------------------------------------------")
+
+        
 
 
         # Teniendo la nueva función objetivo, ya se puede ver si se actualiza o no la tasa de pulso(ri) y la Sonoridad(A)
@@ -646,24 +666,51 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
 
 
 
+
     #####################################################################################
     # Para almacenar tiempo de ejecución
     hora_fin = datetime.datetime.now()
     ejecut = hora_fin - hora_inicio
+    tiempo_ejecucion = str(ejecut)
 
-    # Para guardar información en archivo de EXCEl
-    dI={"alpha":alpha, "gamma":gamma, "No. de iteraciones":iter_max, "Rango_Frecuencia(min)":fmin,"Rango_Frecuencia(max)":fmax,"Evaluaciones cardinales de cada alternativa":EV,"Pesos por cada criterio": w}
+    # Imprimimos los resultados de tiempo
+    print()
+    print("Algoritmo MOORA-BA")
+    print("Hora de inicio:", hora_inicio.time())
+    print("Fecha de inicio:", fecha_inicio)
+    print("Hora de finalización:", hora_fin.time())
+    print("Tiempo de ejecución:", ejecut)
+    print("  ---------------------------------")
+    print()
+
+
+    ####################################################################################
+    ### Para guardar información en archivo de EXCEl
+
+    base_filename = 'Experimentos/MOORABA'# Obtener el nombre del archivo base
+    counter = 1 # Inicializar un contador para el nombre del archivo
+    excel_filename = f'{base_filename}_{counter}.xlsx'
+
+    ### --Verificar si el archivo ya existe, si es así, incrementar el contador
+    while os.path.exists(excel_filename):
+        counter += 1
+        excel_filename = f'{base_filename}_{counter}.xlsx'
+
+
+    ### -- Guardar los datos en un archivo xlsx
+    dI = {"alpha": [alpha], "gamma": [gamma], "No. de iteraciones": [iter_max]}
     dT= {"Algoritmo": ["MOORA-BA"],
         "Cantidad de Iteraciones": [it],
         "Hora de inicio": [hora_inicio.time()],
         "Fecha de inicio": [fecha_inicio],
         "Hora de finalización": [hora_fin.time()],
-        "Tiempo de ejecución": [ejecut] }
+        "Tiempo de ejecución": [tiempo_ejecucion] }
 
     dataT = pd.DataFrame(dT)
     dataI = pd.DataFrame(dI)
     dataAlt = pd.DataFrame(RankFin)
     dataw = pd.DataFrame(w)
+    dataECA = pd.DataFrame(EV)
     dataND = pd.DataFrame(normalized_data)
     datawd= pd.DataFrame(weighted_data)
     datags= pd.DataFrame(global_scores)
@@ -675,18 +722,17 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
     dataai =pd.DataFrame(ai)
     dataf = pd.DataFrame(f)
     datarnd= pd.DataFrame(rnd)
-    #dataFmin= pd.DataFrame(FuncObj)
-    #dataFmax= pd.DataFrame(IF_max)
+    dataOrig=pd.DataFrame(raw_data)
     alternativas = Resultados[-10:]
 
 
-    with pd.ExcelWriter('Experimentos2/MOORABA.xlsx', engine='xlsxwriter') as writer:
-        dataI.to_excel(writer, sheet_name='Iniciales')
-        dataT.to_excel(writer, sheet_name='Tiempos')
+    with pd.ExcelWriter(excel_filename, engine='xlsxwriter') as writer:
+        dataT.to_excel(writer, sheet_name='Tiempos', index=False)
+        dataMOO.to_excel(writer, sheet_name='Resultados_MOORA')
+        dataResult.to_excel(writer, sheet_name='Resultados_iteración')
+        dataOrig.to_excel(writer, sheet_name='Matriz_decisión')
+        dataI.to_excel(writer, sheet_name='Variables_Iniciales')
         dataw.to_excel(writer, sheet_name='w')
-        x.to_excel(writer, sheet_name='Matriz_decisión')
-        dataND.to_excel(writer, sheet_name='Matriz_normaliza')
-        datawd.to_excel(writer, sheet_name='Matriz_ponderada')
         datags.to_excel(writer, sheet_name='Evaluación_cada_alternativa')
         datarii.to_excel(writer, sheet_name='Tasa_pulso(Inicial)')
         datari.to_excel(writer, sheet_name='Tasa_pulso(Final)')
@@ -694,16 +740,49 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
         dataai.to_excel(writer, sheet_name='Sonoridad(Final)')
         dataf.to_excel(writer, sheet_name='Frecuencia')
         datarnd.to_excel(writer, sheet_name='No_Aleatorios')
-        #dataFmin.to_excel(writer, sheet_name="Función objetivo")
-        #dataFmax.to_excel(writer, sheet_name="Función objetivo(valor)")
-        v.to_excel(writer, sheet_name='Velocidad')
-        x.to_excel(writer, sheet_name='Posición')
-        dataMOO.to_excel(writer, sheet_name='Resultados_MOORA')
-        dataAlt.to_excel(writer, sheet_name='Ranking_alternativas')
+        dataECA.to_excel(writer, sheet_name='Ev_cardinales_alternativa')
+        v.to_excel(writer, sheet_name='Velocidades')
+        x.to_excel(writer, sheet_name='Posiciones')
+        dataND.to_excel(writer, sheet_name='Matriz_normaliza')
+        datawd.to_excel(writer, sheet_name='Matriz_ponderada')
+        dataAlt.to_excel(writer, sheet_name='Última_clasificación')
 
-    print('Datos guardados el archivo:MOORABA.xlsx')
+        # Ajustar automáticamente el ancho de las columnas en la hoja 'Tiempos'
+        worksheet = writer.sheets['Tiempos']
+        for i, col in enumerate(dataT.columns):
+            column_len = max(dataT[col].astype(str).map(len).max(), len(col))
+            worksheet.set_column(i, i, column_len)
+
+
+    print(f'Datos guardados en el archivo: {excel_filename}')
+
+
+    ### -- Guardar los mismos datos en un archivo CSV con el mismo número
+    csv_filename = f'{base_filename}_{counter}.csv'
+    dataT.to_csv(csv_filename, index=False)
+    dataMOO.to_csv(csv_filename, mode='a', index=False)
+    dataResult.to_csv(csv_filename, mode='a', index=False)
+    dataOrig.to_csv(csv_filename, mode='a', index=False)
+    dataI.to_csv(csv_filename, mode='a', index=False)
+    dataw.to_csv(csv_filename, mode='a', index=False)
+    datags.to_csv(csv_filename, mode='a', index=False)
+    datarii.to_csv(csv_filename, mode='a', index=False)
+    datari.to_csv(csv_filename, mode='a', index=False)
+    dataaii.to_csv(csv_filename, mode='a', index=False)
+    dataai.to_csv(csv_filename, mode='a', index=False)
+    dataf.to_csv(csv_filename, mode='a', index=False)
+    datarnd.to_csv(csv_filename, mode='a', index=False)
+    dataECA.to_csv(csv_filename, mode='a', index=False)
+    v.to_csv(csv_filename, mode='a', index=False)
+    x.to_csv(csv_filename, mode='a', index=False)
+    dataND.to_csv(csv_filename, mode='a', index=False)
+    datawd.to_csv(csv_filename, mode='a', index=False)
+    dataAlt.to_csv(csv_filename, mode='a', index=False)
+
+
+    print(f'Datos guardados en el archivo CSV: {csv_filename}')
     print()
-
+    
     # Imprimimos los resultados de tiempo
     print("Algoritmo MOORA-BA")
     print("Hora de inicio:", hora_inicio.time())
@@ -716,7 +795,7 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
     await asyncio.run(0.1)
     datosMooraba = {
                 "mejor_alternativa": alternativas,
-                "iteraciones": t,
+                "iteraciones": iter_max,
                 "hora_inicio": hora_inicio.time().strftime('%H:%M:%S'),
                 "fecha_inicio": fecha_inicio.isoformat(),
                 "hora_finalizacion": hora_fin.time().strftime('%H:%M:%S'),
@@ -724,3 +803,5 @@ async def ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2):
             }
 
     return datosMooraba
+
+

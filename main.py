@@ -15,16 +15,16 @@ from numpy import ndarray
 from openpyxl import load_workbook
 
 from ba import ejecutar_ba
+from da import ejecutar_da
 from daba import ejecutar_daba
 from dapso import ejecutar_dapso
+from mooraba import ejecutar_Mooraba
 from moorapso import ejecutar_moorapso
 from moorav import ejecutar_moorav
 #importacion de algoritmos
 from pso import ejecutar_pso
 from topsis import ejecutar_topsis
 from topsispso import ejecutar_topsispso
-from da import ejecutar_da
-from mooraba import ejecutar_Mooraba
 
 db = SQLAlchemy()
 app = Flask(__name__)
@@ -474,17 +474,12 @@ def mooraba():
         # Obtén los datos del formulario
         w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        alpha = float(request.form['alpha'])
+        gamma = float(request.form['gamma'])
+        iter_max = int(request.form['T'])
         
         # Llama a la función de procesar_datos en pso.py
-        datosMooraba = asyncio.run(ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2))
+        datosMooraba = asyncio.run(ejecutar_Mooraba(w, alpha, gamma, iter_max))
 
         return render_template('mooraba.html', datosMooraba=datosMooraba)
     except Exception as e:
@@ -497,18 +492,12 @@ def calcular_mooraba():
         # Obtén los datos del formulario
         w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        # Divide las cadenas de texto en listas
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        alpha = float(request.form['alpha'])
+        gamma = float(request.form['gamma'])
+        iter_max = int(request.form['T'])
 
         # Llama a la función de PSO en pso.py
-        datosMooraba = asyncio.run(ejecutar_Mooraba(w, wwi, c1, c2, T, r1, r2))
+        datosMooraba = asyncio.run(ejecutar_Mooraba(w, alpha, gamma, iter_max))
         print("Resultados de la ejecución:", datosMooraba)
 
         # Obtén los resultados específicos que deseas mostrar
