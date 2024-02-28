@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const mejoresAlternativas = data.mejor_alternativa;
 
             for (let i = 0; i < mejoresAlternativas.length; i++) {
-                document.getElementById(`alternativaMooraba${i}`).innerText = mejoresAlternativas[i];
+                document.getElementById(`alternativa${i}`).innerText = mejoresAlternativas[i];
                 
             }
 
