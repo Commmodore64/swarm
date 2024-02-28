@@ -489,7 +489,7 @@ def mooraba():
 @app.route('/mooraba', methods=['POST'])
 def calcular_mooraba():
     try:
-        # Obtén los datos del formulario
+        # Obtén los datos del formulario de la solicitud POST
         w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
         alpha = float(request.form['alpha'])
@@ -500,17 +500,13 @@ def calcular_mooraba():
         datosMooraba = asyncio.run(ejecutar_Mooraba(w, alpha, gamma, iter_max))
         print("Resultados de la ejecución:", datosMooraba)
 
-        # Obtén los resultados específicos que deseas mostrar
-        # dataGBP = resultados['dataGBP']
-        # dataGBF = resultados['dataGBF']
-        # dataResult = resultados['dataResult']
-
-        # Puedes hacer lo que quieras con los resultados, por ejemplo, pasarlos al template
+        # Devuelve los resultados como JSON
         return jsonify(datosMooraba)
     except Exception as e:
-        # Manejo de errores, por ejemplo, mostrar un mensaje de error en la interfaz
-       print(f'Error en calcular_mooraba: {str(e)}')
-    return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
+        # Manejo de errores
+        print(f'Error en calcular_mooraba: {str(e)}')
+        return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
+
 #-------------------------------------------------------------------------------------------------------------------
 @app.route('/comparacionBa')
 def comparacionBa():

@@ -790,8 +790,6 @@ async def ejecutar_Mooraba(w, alpha, gamma, iter_max):
     print("Hora de finalización:", hora_fin.time())
     print("Tiempo de ejecución:", ejecut)
     print()
-
-
     await asyncio.run(0.1)
     datosMooraba = {
                 "mejor_alternativa": alternativas,
@@ -803,5 +801,4 @@ async def ejecutar_Mooraba(w, alpha, gamma, iter_max):
             }
 
     return datosMooraba
-
 
