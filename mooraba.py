@@ -19,7 +19,7 @@ from flask import Flask
 from openpyxl import load_workbook
 
 
-async def ejecutar_Mooraba(w, alpha, gamma, iter_max):
+async def ejecutar_mooraba(w, alpha, gamma, iter_max):
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
     Resultados=[]
@@ -687,7 +687,7 @@ async def ejecutar_Mooraba(w, alpha, gamma, iter_max):
     ####################################################################################
     ### Para guardar información en archivo de EXCEl
 
-    base_filename = 'Experimentos/MOORABA'# Obtener el nombre del archivo base
+    base_filename = 'Experimentos2/MOORABA'# Obtener el nombre del archivo base
     counter = 1 # Inicializar un contador para el nombre del archivo
     excel_filename = f'{base_filename}_{counter}.xlsx'
 
@@ -723,7 +723,7 @@ async def ejecutar_Mooraba(w, alpha, gamma, iter_max):
     dataf = pd.DataFrame(f)
     datarnd= pd.DataFrame(rnd)
     dataOrig=pd.DataFrame(raw_data)
-    alternativas = Resultados[-10:]
+    alternativas = Resultados[-9:]
 
 
     with pd.ExcelWriter(excel_filename, engine='xlsxwriter') as writer:
@@ -792,15 +792,16 @@ async def ejecutar_Mooraba(w, alpha, gamma, iter_max):
     print()
 
 
-    await asyncio.run(0.1)
+    await asyncio.sleep(0.1)
+
     datosMooraba = {
-                "mejor_alternativa": alternativas,
-                "iteraciones": iter_max,
-                "hora_inicio": hora_inicio.time().strftime('%H:%M:%S'),
-                "fecha_inicio": fecha_inicio.isoformat(),
-                "hora_finalizacion": hora_fin.time().strftime('%H:%M:%S'),
-                "tiempo_ejecucion": str(hora_fin - hora_inicio)
-            }
+        "mejor_alternativa": alternativas,
+        "iteraciones": it,
+        "hora_inicio": hora_inicio.time().strftime('%H:%M:%S'),
+        "fecha_inicio": fecha_inicio.isoformat(),
+        "hora_finalizacion": hora_fin.time().strftime('%H:%M:%S'),
+        "tiempo_ejecucion": str(hora_fin - hora_inicio)
+    }
 
     return datosMooraba
 

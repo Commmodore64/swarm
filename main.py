@@ -18,7 +18,7 @@ from ba import ejecutar_ba
 from da import ejecutar_da
 from daba import ejecutar_daba
 from dapso import ejecutar_dapso
-from mooraba import ejecutar_Mooraba
+from mooraba import ejecutar_mooraba
 from moorapso import ejecutar_moorapso
 from moorav import ejecutar_moorav
 #importacion de algoritmos
@@ -479,7 +479,7 @@ def mooraba():
         iter_max = int(request.form['T'])
         
         # Llama a la función de procesar_datos en pso.py
-        datosMooraba = asyncio.run(ejecutar_Mooraba(w, alpha, gamma, iter_max))
+        datosMooraba = asyncio.run(ejecutar_mooraba(w, alpha, gamma, iter_max))
 
         return render_template('mooraba.html', datosMooraba=datosMooraba)
     except Exception as e:
@@ -497,7 +497,7 @@ def calcular_mooraba():
         iter_max = int(request.form['T'])
 
         # Llama a la función de PSO en pso.py
-        datosMooraba = asyncio.run(ejecutar_Mooraba(w, alpha, gamma, iter_max))
+        datosMooraba = asyncio.run(ejecutar_mooraba(w, alpha, gamma, iter_max))
         print("Resultados de la ejecución:", datosMooraba)
 
         # Obtén los resultados específicos que deseas mostrar
