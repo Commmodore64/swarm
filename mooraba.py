@@ -723,6 +723,7 @@ async def ejecutar_mooraba(w, alpha, gamma, iter_max):
     dataf = pd.DataFrame(f)
     datarnd= pd.DataFrame(rnd)
     dataOrig=pd.DataFrame(raw_data)
+    
     alternativas = Resultados[-10:]
 
 
@@ -785,14 +786,15 @@ async def ejecutar_mooraba(w, alpha, gamma, iter_max):
     
     # Imprimimos los resultados de tiempo
     print("Algoritmo MOORA-BA")
+    print("PRUEBA, Datos W: ", w)
     print("Hora de inicio:", hora_inicio.time())
     print("Fecha de inicio:", fecha_inicio)
     print("Hora de finalización:", hora_fin.time())
     print("Tiempo de ejecución:", ejecut)
     print()
     await asyncio.sleep(0.1)
-    
     alternativas = [int(value) for value in alternativas]
+
 
     datosMooraba = {
         "mejor_alternativa": alternativas,
