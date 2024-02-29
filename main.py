@@ -413,19 +413,14 @@ def calcular_ba():
 def daba():
     try:
         # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w_input =  [float(request.form[f'w{i}']) for i in range(1, 6)]
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        alpha = float(request.form['alpha'])
+        gamma = float(request.form['gamma'])
+        iter_max = int(request.form['T'])
         
         # Llama a la función de procesar_datos en pso.py
-        datosDaba = asyncio.run(ejecutar_daba(w, wwi, c1, c2, T, r1, r2))
+        datosDaba = asyncio.run(ejecutar_daba(w, alpha, gamma, iter_max))
 
         return render_template('daba.html', datosDaba=datosDaba)
     except Exception as e:
@@ -435,34 +430,23 @@ def daba():
 @app.route('/daba', methods=['POST'])
 def calcular_daba():
     try:
-        # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        # Obtén los datos del formulario de la solicitud POST
+        w_input =  [float(request.form[f'w{i}']) for i in range(1, 6)]
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
-        wwi = float(request.form['wwi'])
-        c1 = float(request.form['c1'])
-        c2 = float(request.form['c2'])
-        T = int(request.form['T'])
-        # Divide las cadenas de texto en listas
-        r1_input = request.form['r1']
-        r2_input = request.form['r2']
-        r1 = [float(num.strip()) for num in r1_input.split(',')]
-        r2 = [float(num.strip()) for num in r2_input.split(',')]
+        alpha = float(request.form['alpha'])
+        gamma = float(request.form['gamma'])
+        iter_max = int(request.form['T'])
 
         # Llama a la función de PSO en pso.py
-        datosDaba = asyncio.run(ejecutar_daba(w, wwi, c1, c2, T, r1, r2))
+        datosDaba = asyncio.run(ejecutar_daba(w, alpha, gamma, iter_max))
         print("Resultados de la ejecución:", datosDaba)
 
-        # Obtén los resultados específicos que deseas mostrar
-        # dataGBP = resultados['dataGBP']
-        # dataGBF = resultados['dataGBF']
-        # dataResult = resultados['dataResult']
-
-        # Puedes hacer lo que quieras con los resultados, por ejemplo, pasarlos al template
+        # Devuelve los resultados como JSON
         return jsonify(datosDaba)
     except Exception as e:
-        # Manejo de errores, por ejemplo, mostrar un mensaje de error en la interfaz
-       print(f'Error en calcular_daba: {str(e)}')
-    return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
+        # Manejo de errores
+        print(f'Error en calcular_mooraba: {str(e)}')
+        return jsonify({'error': 'Ocurrió un error en el servidor'}), 500
 #-------------------------------------------------------------------------------------------------------------------
 
 #-------------------------------------------------------------------------------------------------------------------

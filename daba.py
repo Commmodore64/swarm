@@ -1,22 +1,29 @@
-
-#
 # Experimento DA-BA
 # Doctorado en Tecnología
 # Universidad Autónoma de ciudad Juárez
-# ACtualizado 010/Nov/2023
+# Actualización 26-Feb-2024
 
-import pandas as pd
-import numpy as np
-from math import e
-import math
-import random
-import datetime
+
 import asyncio
+import datetime
+import math
+import os
+import random
+from decimal import Decimal
+from math import e
 
-async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import xlsxwriter
+from flask import Flask
+from openpyxl import load_workbook
 
+
+async def ejecutar_daba(w, alpha, gamma, iter_max):
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
+    Resultados=[]
 
     ######################################################################################################################################################
     # Paso # 1: Inicialice la primera posición y velocidad
@@ -24,70 +31,63 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
     #
     n=9 #Alternativas
     d=5 # Criterios
-    #print (n) #a=9   # Alternativas
-    #print (d) #n=6   # Criterior
-    #n = x.shape[0]
-    #d = x.shape[1]
 
 
     #-------------- Posición inicial
     #               lugar donde algo se encuentra, es decir la posición de los mirciélagos
     #
-    #- comando para ingresar desde archivo de Excel
-    #x0= pd.read_csv('Pos_Inicial.cvs')
-    A1t={'C1':[0.048,0.053,0.057,0.062,0.066,0.070,0.075,0.079,0.083],
-        'C2':[0.047,0.052,0.057,0.062,0.066,0.071,0.075,0.079,0.083],
-        'C3':[0.070,0.066,0.066,0.063,0.070,0.066,0.066,0.066,0.066],
-        'C4':[0.087,0.081,0.076,0.058,0.085,0.058,0.047,0.035,0.051],
-        'C5':[0.190,0.058,0.022,0.007,0.004,0.003,0.002,0.002,0.000]}
-    x=pd.DataFrame(A1t)
-    print("Posición inicial=")
+    print()
+    print("-------------------------------------------")
+    print("Construcción de la matriz de decisión")
+    attributes = ["C1", "C2", "C3", "C4", "C5"]
+    candidates = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9"]
+
+    raw_data = [
+        [0.048, 0.047, 0.070, 0.087, 0.190],
+        [0.053, 0.052, 0.066, 0.081, 0.058],
+        [0.057, 0.057, 0.066, 0.076, 0.022],
+        [0.062, 0.062, 0.063, 0.058, 0.007],
+        [0.066, 0.066, 0.070, 0.085, 0.004],
+        [0.070, 0.071, 0.066, 0.058, 0.003],
+        [0.075, 0.075, 0.066, 0.047, 0.002],
+        [0.079, 0.079, 0.066, 0.035, 0.002],
+        [0.083, 0.083, 0.066, 0.051, 0.000],
+    ]
+
+    # Mostrar los datos sin procesar que tenemos
+    x = pd.DataFrame(data=raw_data, index=candidates, columns=attributes)
     print(x,"\n")
 
-    #-------------- Velocidad inicial
-    #           velocidad de algo a una dirección dada para cada murciélago
-    #
-    #- Comando para ingresar datos desde excel
-    #v0= pd.read_csv('Vel_Inicial.cvs')
-    #v0 = pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-    #for i in range(d):
-    #    Vram1=[]
-    #    for j in range(n):
-    #        Vram1.append(0.00)
-    #    Ver1 = pd.DataFrame({'C1':[Vram1[0]],'C2':[Vram1[1]],'C3':[Vram1[2]],'C4':[Vram1[3]],'C5':[Vram1[4]]})
-    #    v0 = pd.concat([v,Ver1], ignore_index=True)
 
-    # valores de cero para la velocidad
-    #v =pd.DataFrame(0, index=range(n), columns=range(d))
-    #v.columns = ['C1','C2','C3','C4','C5']
-    #Velocidad con valores aleaorios
-    v = pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-    for i in range(n):
-        Vram1=[]
-        for j in range(d):
-            Vram=random.uniform(0,1)
-            #print("Vram",Vram)
-            Vram1.append(round((float(Vram)),3))
-        Ver1 = pd.DataFrame({'C1':[Vram1[0]],'C2':[Vram1[1]],'C3':[Vram1[2]],'C4':[Vram1[3]],'C5':[Vram1[4]]})
-        v = pd.concat([v,Ver1], ignore_index=True)
-    print("Velocidad inicial=")
+    #-------------- Velocidad inicial
+    data = np.random.uniform(0, 1, size=(n, d)).round(3)
+    v = pd.DataFrame(data, columns=attributes, index=candidates)
+    print("\n Velocidad inicial=")
     print(v,"\n")
 
+    #############################################################################################
+    print("\n-------------------------------------------")
+    print("Controles iniciales")
 
-    #-------------- Configuración de parámetros
-    #
-    alpha=0.90   # Valor para actualizar Ai Loudness 
-    gamma=0.90   # Valor para actualizar ri Pulse Rate
+    ### -- Pesos por cada criterio
+    #w = [0.400, 0.200, 0.030, 0.070, 0.300]
+    #w = [0.300, 0.200, 0.200, 0.150, 0.150] 
+    #w = [0.200, 0.200, 0.200, 0.200, 0.200]
+    #w = [0.123, 0.099, 0.043, 0.343, 0.392]
+    weights = pd.Series(w, index=attributes)
+    #print(weights,"          \n")
+
+    #alpha=0.90   # Valor para actualizar Ai Loudness 
+    #gamma=0.90   # Valor para actualizar ri Pulse Rate
+
+    # ----Iteraciones
+    #iter_max = int(input("\n""Ingrese el numero de iteraciones maximas: \n"))
+    #iter_max = 20
 
     # ----Tasa de pulso (Pulse rate) 
     #Valores para tasa de pulso [0,1]
     #print("Ingrese los valores iniciales para ri / Pulse emission: [0,1]")
     ri=[]  
-    #for a in range (n):
-        #ri0 = float(input("BAT" + " " + str(a+1) + "\n"))
-    #     ri0=0.1
-    #     ri.append(ri0)
-    #ri=pd.Series(ri)
     ri = pd.Series(np.random.rand(n))
     ri_ini=ri
     #print(ri)
@@ -97,10 +97,6 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
     #         Valores sonoridad [1,2]
     #print("\n""Ingrese los valores iniciales para la sonoridad Ai / Loudness: [1,2]")
     ai=[]   
-    #for b in range (n):
-        #ai0 = float(input("BAT" + " " + str(b+1) + "\n"))
-    #     ai0 = 0.95
-    #     ai.append(ai0)
     ai = pd.Series(np.random.uniform(1,2, size=n))
     ai_ini=ai
     #ai=pd.Series(ai)
@@ -131,34 +127,21 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
     rnd=pd.Series(np.random.rand(n))
     #print(rnd)
 
-    #----Grado de preferencia para cada alternativa")
-    # Los pesos son por cada criterio
-    #w=[float(0.200),float(0.200),float(0.200),float(0.200),float(0.200)]
-    w=[float(0.400),float(0.200),float(0.030),float(0.070),float(0.300)]
-    #w=[float(0.123),float(0.099),float(0.043),float(0.343),float(0.392)]
-    #print(w,"\n")
 
-    # ----Iteraciones
-    #iter_max = int(input("\n""Ingrese el numero de iteraciones maximas: \n"))
-    iter_max = 10
-
-    print("Configuración de parámetros:")
     print("             alpha",alpha) 
     print("             gamma",gamma)
     print("             Número de iteraciones:",iter_max )
+    print("\n Pesos por cada criterio")
+    print("     ", w)
     print("\n Tasa de pulso (Pulse rate)")
     print(ri)
     print("\n Sonoridad (Loudness)")
     print(ai)
     print("\n Frecuencia")
     print(f)
-    print("\n Rango de frecuencia: [",fmin,",",fmax,"]")
     print("\n Valores Aleatorios")
     print(rnd)
-    print("Grado de preferencia para cada alternativa")
-    print(w)
-    print("Función Objetivo: IS(a_{1}^i, a_{2}^i, ...a_{m}^i) = PI_{j=1}^m(a^i / S_{l})^w_{j}")
-    print("--------------------------------------------------  \n")
+    #print("--------------------------------------------------  \n")
 
 
     ######################################################################################################################################################
@@ -166,160 +149,111 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
 
     # Iteración
     it = 0
-    Resultados = []
-
+    ResultadosDA = []
+    global_best=pd.DataFrame(columns=attributes)
+    CCB = pd.DataFrame(columns=attributes)
 
     while it < iter_max:
         print('\n =======================================================')
-        print("ITERACIÓN #",it)
+        print("                    ITERACIÓN #",it)
+        print('=======================================================')
+
+        # Tomar los últimos 'n' valores del DataFrame x
+        xlen = x.iloc[-n:]
+        # Reiniciar los índices del DataFrame para que comiencen desde 1
+        xlen = xlen.reset_index(drop=True)
+        # Asignar los índices de los nuevos renglones
+        xlen.index = candidates[:len(xlen)]
 
         ######################################################
-        # Calcular el valor de la función objetivo en cada x:  1+2x-x^2
+        # Calcular el valor de la función objetivo
         #
         #
-        
-        #a)Solución ideal
+
+        ### -- Solución ideal
         St=[]
-        IF_max=[]
-        IF_maxN=[]
-        #print("-------------------------------------------")
-        #print("Establecer la solución ideal")
-        # Mejor solución del conjunto de los datos.
-        # 1) promedio de cada criterio
-
         for j in range(d):
-            actual_x=len(x)-n
             P1=0
-
             for i in range(n):
-                P1 = float(P1)+float(x.iat[actual_x,j])
-                actual_x=actual_x+1
-            P1=round((float(P1)/float(n)),3)
-            St.append(round((float(P1)),3))
-        S = pd.Series(St)
-        #print("S\n",S,"\n")
+                P1 += round(xlen.iat[i,j],3)
+            P2=round((float(P1)/float(n)),3)
+            St.append(round((float(P2)),3))
+        S= pd.DataFrame(St, columns=["    Solución ideal"])
 
-        #print("-------------------------------------------")
-        #print("Determinar el índice de similitud")
-        #a) normalizamos (a/S)
-        #b) elevar lo normalizado al peso(w)
-        #c) Producto sucesivo
+        ### -- Índice de similitud
         CFt=[]
+        SI1=[]
         PST=[]
 
-        ISSFO = pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-        actual_x=len(x)-n
-
+        ISSFO = pd.DataFrame(columns=attributes)
         for j in range(n):
             SI1=[]
             ISSFOm1=[]
-
             for i in range(d):
-                dat1= float(x.iat[actual_x,i])
-                dat2 = float(S[i])
-                wn2=float(w[i]) 
+                dat1= float(xlen.iat[j,i])
+                dat2 = float(S.iat[i, 0]) 
                 dat3 = round((dat1/dat2),3)
-                #print("normalizado",dat3)
-
-                #print(dat1,"/",dat2, "=",dat3)
+                wn2=float(w[i])
                 dat4 = round((abs(dat3)**abs(wn2)),3)
-                #print("Elevado",dat4)
-                #print("                         ",dat3,"^",wn2,"=",dat4)
-                #SI1.append(float(dat4))
                 ISSFOm1.append(round((float(dat4)),3))
-                #print()
-            #print("SI1")
-            #print(SI1)
-            actual_x=actual_x+1
             ISSFOVr1 = pd.DataFrame({'C1':[ISSFOm1[0]],'C2':[ISSFOm1[1]],'C3':[ISSFOm1[2]],'C4':[ISSFOm1[3]],'C5':[ISSFOm1[4]]})
             ISSFO = pd.concat([ISSFO,ISSFOVr1], ignore_index=True)
-        #print("ISSFO(1)=")
-        #print(ISSFO,"\n")
-        
+            
         for j in range(n):
             Sqq1=float(1)   
             for z in range(d):
                 dat5= float(ISSFO.iat[j,z])
-                #print("valor",dat5)
-                #Sqq1=(float(Sqq1)*float(SI1[z]))
                 Sqq1=(Sqq1*dat5)
-                #print("              Sqq1",Sqq1)
-                #print("              dat5",dat5)
-            #print("-----------")
             Sqq1=round(Sqq1,3)
-            #print("producto",Sqq1)
-            #print()
             CFt.append(float(Sqq1))
             PST.append(float(Sqq1))
-        PSS = pd.Series(CFt)
-        #print("-- Índice de similitud =")
-        #print(PSS)
+        PSS = pd.DataFrame(PST, columns=["    Índice de similitud"]) 
 
-        #print("\n -------------------------------------------")
-        #print("Establecer el ranking de las alternativas, en orden descendente.")
-        Alt=[]
-        PST.sort(reverse=True)
-        #print("reversa",PST)
-        #print()
+        ### -- Clasificación de alternativas
+        PST = pd.DataFrame(PST, columns=["Índice de similitud"])
+        PST.sort_values(by="Índice de similitud", ascending=True, inplace=True) # Ordenar el DataFrame PST por el índice de similitud del menor al mayor
 
-        qqtemp=0
-        indxx=0
-        for i in range(n):
-            au=0
-            for j in range(n):
-                compar1= round((float(PST[i])),3)
-                compar2= round((float(PSS[au])),3)
-                #print(compar1,"=", compar2)
-                if(compar1==compar2):
-                    if indxx==0:
-                        qqtemp=j
-                        Alt.append(qqtemp+1)
-                    else:
-                        qqtemp=j
-                        if (qqtemp+1) in Alt:
-                            aalt=0
-                        else:
-                            Alt.append(qqtemp+1)               
-                    indxx=indxx+1
-                au=au+1
-                #print("Alt",Alt)
-        #print("   Producto sucesivo=   ", PST)
-        print("   Ranking_alternativas=",Alt)
+        
+        ### -- Crear DataFrame para clasificación final
+        RankFin = pd.DataFrame({
+            'Puntuación Global': PST['Índice de similitud'].values,
+            'Alternativa': PST.index})
+        print("\nClasificación Final:")
+        print(RankFin)
 
-        FuncObj=PST
-        fitness=ISSFO
-        IF_max.append(round((float(min(FuncObj))),3))
-        IF_maxt=(round((float(min(FuncObj))),3))
-        print("\n Función objetivo= ",FuncObj)
-        print("\n Función objetivo(min)= ",IF_max, "\n")
-        #print("\n fitness_max= ",IF_maxt)
-        print("fitness \n",fitness)
-        print()   
+        
+        # Mejor posición local
+        # 1) 
+        FuncObj=RankFin['Puntuación Global'].round(6).tolist() 
+        #print("\n --------------------------------------------------")
+        #print("  Función objetivo= \n",FuncObj)
+        # 2) se asigna el mejor función objetivo
+        #IF_maxt=int(RankFin.iloc[0]['Alternativa'])
+        IF_maxt=(RankFin.iat[0,1])# guarda la alternativa, para usar el index en la matriz original (este listado inicia en 0, por lo que no se requiere restar un 1)
+        Mejor=IF_maxt 
+        #print("\n Index de la Función objetivo(min)= \n",IF_maxt) # los valores inician en 0
 
-        global_best =pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-        for j in range(n):
-            if FuncObj[j]==IF_maxt:
-                #print("FuncObj[j]==IF_maxt",FuncObj[j],IF_maxt)
-                Mejor=j # guarda la mejor alternativa
-                #print("La mejor alternativa es A", Mejor)
-                CBt=[]
-
-                for z in range(d):
-                    CB1= float(x.iat[j,z])
-                    #print("CB1",CB1)
-                    CBt.append(CB1)
-                    #print("CBt",CBt)
-            #print("CBt",CBt)
-        #print("La mejor alternativa es A", Mejor+1)
-        CCB = pd.DataFrame({'C1':[CBt[0]],'C2':[CBt[1]],'C3':[CBt[2]],'C4':[CBt[3]],'C5':[CBt[4]]})
-        #print("CCB",CCB)
-        global_best = pd.concat([global_best,CCB], ignore_index=True)
-        print("El mejor global local: ")
+        print("\n--------------------------------------------------")
+        print("La mejor solución es la alternativa: A", (RankFin.iloc[0]['Alternativa'])-1, "con una puntuación global de:", RankFin.round(6).iloc[0]['Puntuación Global'])
+        
+        #print("xlen",xlen)
+        selected_row = xlen.iloc[IF_maxt]
+        #print(selected_row.tolist())
+        global_best =pd.DataFrame(columns=attributes)
+        global_best = selected_row
+        #print("\nEl mejor global local: ", global_best.tolist(), "\n")
+        print("\nEl mejor global local: ")
         print(global_best, "\n")
-        #print("------------------------------------------------------")
+
+        # Agregar los valores de DA, solo en la iteración 1  
+        if it==0:
+            ResultadosDA = RankFin['Alternativa'].tolist()  # Redondear a 6 decimales
+            #print("Resultados preliminares de DA:")
+            #print(ResultadosDA)
 
         #Result.append(Mejor+1)
-        Resultados.append(Mejor+1)
+        Resultados.append(IF_maxt)
+        #print(Resultados)
 
 
         ######################################################
@@ -335,16 +269,11 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
             beta = round((random.uniform(0,1)),3)
             fxxx = round((fmin + (fmax-fmin)*beta),3)
             fxVVw.append(round((float(fxxx)),3))
-            
-            #print("     beta= ", beta)
-            #print("     fmin= ",fmin)
-            #print("     fmax= ",fmax)
-            #print("      Nueva_frecuencia=",fxxx)
-            #print()
 
         f1 = pd.DataFrame({'C1':[fxVVw[0]],'C2':[fxVVw[1]],'C3':[fxVVw[2]],'C4':[fxVVw[3]],'C5':[fxVVw[4]]})
         f = pd.concat([f,f1], ignore_index=True)
-        print("Nuevas frecuencias: ")
+        print("\n -------------------------------------------------------------")
+        print("\n Nuevas frecuencias: ")
         f_actual=len(f)-1
         f_fin=len(f)
         print(f.iloc[f_actual:f_fin])
@@ -355,34 +284,23 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
         # Vi = Velocidad inicial + (Posición actual - Mejor_posición) * Frecuencia
         v_actual=len(v)-n
         x_actual=len(x)-n
+        
         for i in range(n):#n alternativas
             VAct=[]
             f_actual=len(f)-1
-            global_actual=len(global_best)-1
+            gb_actual=len(global_best)-1
 
             for j in range(d): #dcriterios
-
                 # Vi = Velocidad inicial + (Posición actual - Mejor_posición) * Frecuencia
-                VAct1 = v.iat[v_actual,j] + (x.iat[x_actual,j] - global_best.iat[global_actual,j]) * f.iat[f_actual,j]
+                VAct1 = v.iat[v_actual,j] + (x.iat[x_actual,j] - global_best.iat[j]) * f.iat[f_actual,j]
                 VAct.append(round((float(VAct1)),3))
-
-                #print("     x.iat[i,j]",x.iat[x_actual,j])
-                #print("     v.iat[i,j]",v.iat[v_actual,j])
-                #print("     f.iat[f_actual,i]",f.iat[f_actual,j])
-                #print("     global_best.iat[0,i]",global_best.iat[global_actual,j])          
-                #print(v.iat[j,v_actual],"+ (", x.iat[j,x_actual], "-", global_best.iat[global_actual,i], ")*", f.iat[f_actual,i])
-                #print("   VAct===", VAct1)
-                #print("---")
 
             x_actual=x_actual+1
             v_actual=v_actual+1
-            #print("v_new",v_actual)
             Ver1 = pd.DataFrame({'C1':[VAct[0]],'C2':[VAct[1]],'C3':[VAct[2]],'C4':[VAct[3]],'C5':[VAct[4]]})
             v = pd.concat([v,Ver1], ignore_index=True)
-        print("-----")
+        
         print("\n velocidad actualizada")
-        #print(v)
-        #print()
         v_actual=len(v)-n
         v_fin=len(v)
         print(v.iloc[v_actual:v_fin])
@@ -398,25 +316,18 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
         for i in range(n):#n alternativas
             XAct=[]
             for j in range(d): #dcriterios
-                #print("posición",x.iat[x_actual,j])
-                #print("vel_actual",v.iat[v_actual,j])
                 XAct1 = x.iat[x_actual,j] + v.iat[v_actual,j] 
                 XAct.append(round((float(XAct1)),3))
-            #print("XAct", XAct)
-            #print("-------")
 
-            x_actual=x_actual+1
-            v_actual=v_actual+1
+            x_actual += 1
+            v_actual += 1
 
             Ver2 = pd.DataFrame({'C1':[XAct[0]],'C2':[XAct[1]],'C3':[XAct[2]],'C4':[XAct[3]],'C5':[XAct[4]]})
             x = pd.concat([x,Ver2], ignore_index=True)
         print("\n Posición actualizada")
-        #print(x)
         x_actual=len(x)-n
         x_fin=len(x)
         print(x.iloc[x_actual:x_fin])
-        #print(x.iloc[9:18])
-
 
 
         ######################################################
@@ -460,15 +371,13 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
                     #print("                  x[i]= ",rrtP3)             
                 
                 x_actual=x_actual+1
-                #print("x_newFIN",xx1)
                 Xer1 = pd.DataFrame({'C1':[xx1[0]],'C2':[xx1[1]],'C3':[xx1[2]],'C4':[xx1[3]],'C5':[xx1[4]]})
                 x = pd.concat([x,Xer1], ignore_index=True)
-            #print(x)
+
             print("Nuevas posiciones")
             xal=len(x)-n
             print(x.iloc[xal:xal+n])
         else:
-            #print("\n ***************************************************************ENtre al ELSE")
             x_actual=len(x)-n
             v_actual=len(v)-n
             f_actual=len(f)-1
@@ -480,35 +389,27 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
                     
                     # velocidad
                     rrtP4 = float(v.iat[v_actual,j])
-                    #print("     Velocidad = ",rrtP4)
 
                     # Posición
                     rrtP3 = float(x.iat[x_actual,j])
-                    #print("      Posición = ",rrtP3)
 
                     #global_best
-                    rrtP7 = float(global_best.iat[0,j])
-                    #print("   global_best = ",rrtP7)
+                    rrtP7 = float(global_best.iat[j])
 
                     #Nueva_frecuencia
                     rrtP8 = float(f.iat[f_actual,j])
-                    #print("    Nueva_frec = ",rrtP8)
 
                     #nueva velocidad
                     rrtP5 = round((rrtP4 + (rrtP3 -rrtP7) * rrtP8),3)
-                    #print("      Nueva_Vel = ",rrtP5)
                     
                     # nueva posición
                     rrtP6 =round((rrtP3 + rrtP5),3)
-                    #print(" Nueva_posición = ",rrtP6)
 
                     xx1.append(round((float(rrtP6)),3))
                     xx2.append(round((float(rrtP5)),3))
 
-                #print("x_newFIN",xx1)
-                #print("v_newFIN",xx2)
-                x_actual=x_actual+1
-                v_actual=v_actual+1
+                x_actual += 1
+                v_actual += 1
                 Xer1 = pd.DataFrame({'C1':[xx1[0]],'C2':[xx1[1]],'C3':[xx1[2]],'C4':[xx1[3]],'C5':[xx1[4]]})
                 x = pd.concat([x,Xer1], ignore_index=True)
                 Ver1 = pd.DataFrame({'C1':[xx2[0]],'C2':[xx2[1]],'C3':[xx2[2]],'C4':[xx2[3]],'C5':[xx2[4]]})
@@ -519,141 +420,111 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
             print("\n Nueva velocidad generada")
             val=len(v)-n
             print(v.iloc[val:val+n])
-            #print(v)
-        
-            
+
         ######################################################
         # Selección de condiciones para actualizar: La tasa de pulso(ri) y la Sonoridad(A)
             # If (rand > Ai and f(new_fitness < f(Best_fitness))
             # if all(rnd>ri) and all(FuncObj[1]< FuncObj[0])
 
-        #IFmin_cont =len(FuncObj)-1
+        IFmin_cont =len(FuncObj)-1
         #print("IFmin_cont",IFmin_cont)
 
-        # Nueva función objetivo:  suma (x_i^2)
-        
-        #a)Solución ideal
-        Stt=[]
-        #print("-------------------------------------------")
-        #print("Establecer la solución ideal")
-        # Mejor solución del conjunto de los datos.
-        # 1) promedio de cada criterio
+    
+        ######################################################
+        # Calcular la NUEVA función objetivo: Calcular el valor de la función objetivo
+        #
+        #
+        xNW= x.iloc[xal:xal+n]
+        # Reiniciar los índices del nuevo DataFrame para que comiencen desde 1
+        xNW = xNW.reset_index(drop=True)
+        # Asignar los índices de los nuevos renglones
+        xNW.index = candidates[:len(xNW)]
+        #print("xNW",xNW)
 
+        ### -- Solución ideal
+        St=[]
         for j in range(d):
-            actual_x=len(x)-n
-            P1t=0
-
+            P1=0
             for i in range(n):
-                P1t = float(P1t)+float(x.iat[actual_x,j])
-                actual_x=actual_x+1
-            P1t=round((float(P1t)/float(n)),3)
-            Stt.append(round((float(P1t)),3))
-        St = pd.Series(Stt)
-        #print(S,"\n")
+                P1 += round(xNW.iat[i,j],3)
+            P2=round((float(P1)/float(n)),3)
+            St.append(round((float(P2)),3))
+        S= pd.DataFrame(St, columns=["    Solución ideal"])
 
-        #print("-------------------------------------------")
-        #print("Determinar el índice de similitud")
-        #a) normalizamos (a/S)
-        #b) elevar lo normalizado al peso(w)
-        #c) Producto sucesivo
-        CFtt=[]
-        SI1t=[]
-        PSTt=[]
-
-        ISSFOt = pd.DataFrame(columns=['C1','C2','C3','C4','C5'])
-        actual_x=len(x)-n
-
+        ### -- Índice de similitud
+        CFt=[]
+        SI1=[]
+        PST=[]
+        ISSFO = pd.DataFrame(columns=attributes)
         for j in range(n):
-            SI1t=[]
-            ISSFOm1t=[]
-
+            SI1=[]
+            ISSFOm1=[]
             for i in range(d):
-                dat1t= float(x.iat[actual_x,i])
-                dat2t = float(St[i])
-                wn2t=float(w[i]) 
-                dat3t = round((dat1t/dat2t),3)
-                #print("normalizado",dat3t)
-
-                #print(dat1t,"/",dat2t, "=",dat3t)
-                dat4t = round((abs(dat3t)**abs(wn2t)),3)
-                #print("Elevado",dat4t)
-                #print("                         ",dat3t,"^",wn2t,"=",dat4t)
-                #SI1t.append(float(dat4t))
-                ISSFOm1t.append(round((float(dat4t)),3))
-                #print()
-            #print("SI1t")
-            #print(SI1t)
-            actual_x=actual_x+1
-            ISSFOVr1t = pd.DataFrame({'C1':[ISSFOm1t[0]],'C2':[ISSFOm1t[1]],'C3':[ISSFOm1t[2]],'C4':[ISSFOm1t[3]],'C5':[ISSFOm1t[4]]})
-            ISSFOt = pd.concat([ISSFOt,ISSFOVr1t], ignore_index=True)
-        #print("ISSFOt(1)=")
-        #print(ISSFOt,"\n")
+                dat1= float(xNW.iat[j,i])
+                dat2 = float(S.iat[i, 0]) 
+                dat3 = round((dat1/dat2),3)
+                wn2=float(w[i])
+                dat4 = round((abs(dat3)**abs(wn2)),3)
+                ISSFOm1.append(round((float(dat4)),3))
+            ISSFOVr1 = pd.DataFrame({'C1':[ISSFOm1[0]],'C2':[ISSFOm1[1]],'C3':[ISSFOm1[2]],'C4':[ISSFOm1[3]],'C5':[ISSFOm1[4]]})
+            ISSFO = pd.concat([ISSFO,ISSFOVr1], ignore_index=True)
 
         for j in range(n):
-            Sqq1t=float(1)   
+            Sqq1=float(1)   
             for z in range(d):
-                dat5t= float(ISSFOt.iat[j,z])
-                #print("valor",dat5t)
-                #Sqq1t=(float(Sqq1t)*float(SI1t[z]))
-                Sqq1t=(Sqq1t*dat5t)
-                #print("              Sqq1t",Sqq1t)
-                #print("              dat5t",dat5t)
-            #print("-----------")
-            Sqq1t=round(Sqq1t,3)
-            #print("producto",Sqq1t)
-            #print()
-            CFtt.append(float(Sqq1t))
-            PSTt.append(float(Sqq1t))
-        PSSt = pd.Series(CFtt)
-        #print("-- Índice de similitud =")
-        #print(PSSt)
+                dat5= float(ISSFO.iat[j,z])
+                Sqq1=(Sqq1*dat5)
+            Sqq1=round(Sqq1,3)
+            CFt.append(float(Sqq1))
+            PST.append(float(Sqq1))
+        PSS = pd.DataFrame(PST, columns=["    Índice de similitud"]) 
 
-        #print("\n -------------------------------------------")
-        #print("Establecer el ranking de las alternativas, en orden descendente.")
-        Altt=[]
-        PSTt.sort(reverse=True)
-        #print("reversa",PSTt)
-        #print()
 
-        qqtempt=0
-        indxxt=0
-        for i in range(n):
-            aut=0
-            for j in range(n):
-                compar1t= round((float(PSTt[i])),3)
-                compar2t= round((float(PSSt[aut])),3)
-                #print(compar1t,"=", compar2t)
-                if(compar1t==compar2t):
-                    if indxxt==0:
-                        qqtempt=j
-                        Altt.append(qqtempt+1)
-                    else:
-                        qqtempt=j
-                        if (qqtempt+1) in Altt:
-                            aaltt=0
-                        else:
-                            Altt.append(qqtempt+1)               
-                    indxxt=indxxt+1
-                aut=aut+1
-                #print("Altt",Altt)
-        #print("   Producto sucesivo=   ", PSTt)
-        #print("   Ranking_alternativas=",Altt)
+        ### -- Clasificación de alternativas
+        PST = pd.DataFrame(PST, columns=["Índice de similitud"])
+        PST.sort_values(by="Índice de similitud", ascending=True, inplace=True) # Ordenar el DataFrame PST por el índice de similitud del menor al mayor
 
-        FuncObjN=PSTt
-        fitnesst=ISSFOt
+        
+        ### -- Crear DataFrame para clasificación final
+        RankFinNW = pd.DataFrame({
+            'Puntuación Global': PST['Índice de similitud'].values,
+            'Alternativa': PST.index})
+        print("\nClasificación Final:")
+        print(RankFinNW)
 
-        IF_maxNt= min(FuncObjN)
-        IF_maxN.append(round((float(min(FuncObjN)))))
-        #print("\n fitness_min= ",IF_minN)
-        #print("\n fitness_max= ",IF_maxN)
-        #print("fitness \n",fitness)
-        #print()   
 
-        print("\n fitness_min= ",IF_max)
-        #print("fitness \n",fitness)
-        print(" nUEVO_fitness_min= ",IF_maxNt)
-        #print("nUEVO_fitness \n",fitnessN)
-        print()   
+        # Mejor posición local
+        # 1) 
+        FuncObjN=RankFinNW['Puntuación Global'].round(6).tolist() 
+        print("\n Nueva Función objetivo= \n",FuncObjN)
+        # 2) se asigna el mejor función objetivo
+        IF_maxtt=int(RankFinNW.iloc[0]['Alternativa'])
+        MejorNW=IF_maxtt
+        print("\n Función objetivo(min)= \n",IF_maxtt)
+        
+        selected_rowNW = xNW.iloc[[IF_maxtt]]
+        global_bestNW =pd.DataFrame(columns=attributes)
+        global_bestNW= selected_rowNW
+        print("\nNuevo mejor global local: ")
+        print(global_bestNW, "\n")
+
+    
+
+        
+        # Mejor posición local y Función objetivo ( anterior y nueva)
+        print("\n -----------------------------------------------------------------------------------")
+        print("Función objetivo= ")
+        print("                        ",FuncObj)
+        print("Nueva Función objetivo= ")
+        print("                        ",FuncObjN)
+        print()
+        print("Posición local= ")
+        print("                       ",IF_maxt)
+        print("Nueva posición local ")
+        print("                       ",IF_maxtt)
+        print(" -----------------------------------------------------------------------------------")
+
+        
 
 
         # Teniendo la nueva función objetivo, ya se puede ver si se actualiza o no la tasa de pulso(ri) y la Sonoridad(A)
@@ -717,6 +588,8 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
 
     #print(Resultados)
 
+
+
     print()
     print()
     print("**************************")
@@ -724,21 +597,77 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
     print("**************************")
     #print(Resultados)
 
+    print("  Resultados preliminares de DA:")
+    print("                   ",ResultadosDA)
+    # Mostrar los valores de la serie con una letra "A" agregada de manera horizontal
+    #for value in ResultadosDA:
+    #    print(f'A{value}', end=' ')
+    #print("\n----------")
+    print()
+
+    print("  Resultados de cada iteración:")
+    print("  ---------------------------------")
     print("   Iteración","  Mejor_alternativa")
     print("  ---------------------------------")
     for i in range(it):
-        print("       ",i+1,"        ","A",Resultados[i])
+        print("       ",i+1,"        ",Resultados[i])
     print("  ---------------------------------")
 
-    # PAra almacenar tiempo de ejecución
+
+
+
+    #####################################################################################
+    # Para almacenar tiempo de ejecución
     hora_fin = datetime.datetime.now()
+    ejecut = hora_fin - hora_inicio
+    tiempo_ejecucion = str(ejecut)
 
-    # PAra guardar información en archivo de EXCEl
-    dI={"alpha":alpha, "gamma":gamma, "No. de iteraciones":iter_max, "Función_objetivoPSO:":['Min f(x_{1},x_ {2}) =(x_{1}^{2} + (x_{2}\)^{2}")'], "Rango_Frecuencia(min)":fmin,"Rango_Frecuencia(max)":fmax}
-    #General={"Algoritmo BA clásico":0, "Cantidad de Iteraciones":iter_max, "Hora de inicio": hora_inicio.time(), "Fecha de inicio": fecha_inicio, "Hora de finalización": hora_fin.time(), "Tiempo de ejecución":hora_fin-hora_inicio}
+    # Imprimimos los resultados de tiempo
+    print()
+    print("Algoritmo DA-BA")
+    print("No. de iteraciones",iter_max)
+    print("Hora de inicio:", hora_inicio.time())
+    print("Fecha de inicio:", fecha_inicio)
+    print("Hora de finalización:", hora_fin.time())
+    print("Tiempo de ejecución:", ejecut)
+    print("  ---------------------------------")
+    print()
 
-    #dataGral =pd.DataFrame(General)
+
+
+
+    ####################################################################################
+    ### Para guardar información en archivo de EXCEl
+
+    base_filename = 'Experimentos/DABA'# Obtener el nombre del archivo base
+    counter = 1 # Inicializar un contador para el nombre del archivo
+    excel_filename = f'{base_filename}_{counter}.xlsx'
+
+    ### --Verificar si el archivo ya existe, si es así, incrementar el contador
+    while os.path.exists(excel_filename):
+        counter += 1
+        excel_filename = f'{base_filename}_{counter}.xlsx'
+
+
+    ### -- Guardar los datos en un archivo xlsx
+
+    dI={"alpha":[alpha], "gamma":[gamma], "No. de iteraciones":[iter_max]}
+    dT= {"Algoritmo": ["DA-BA"],
+        "Cantidad de Iteraciones": [iter_max],
+        "Hora de inicio": [hora_inicio.time()],
+        "Fecha de inicio": [fecha_inicio],
+        "Hora de finalización": [hora_fin.time()],
+        "Tiempo de ejecución": [ejecut] }
+
+    dataT = pd.DataFrame(dT)
     dataI = pd.DataFrame(dI)
+    dataAlt = pd.DataFrame(RankFin)
+    dataAlt2 = pd.DataFrame(RankFinNW)
+    dataw = pd.DataFrame(w)
+    dataSI = pd.DataFrame(S)
+    dataDIS= pd.DataFrame(PSS)
+    dataPS= pd.DataFrame(PST)
+    dataMOO=pd.DataFrame(ResultadosDA)
     dataResult = pd.DataFrame(Resultados)
     datarii = pd.DataFrame(ri_ini)
     datari = pd.DataFrame(ri)
@@ -746,33 +675,68 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
     dataai =pd.DataFrame(ai)
     dataf = pd.DataFrame(f)
     datarnd= pd.DataFrame(rnd)
-    #dataFmin= pd.DataFrame(FuncObj)
-    #dataFmax= pd.DataFrame(IF_max)
+    dataOrig=pd.DataFrame(raw_data)
     alternativas = Resultados[-10:]
-    
 
-    with pd.ExcelWriter('Experimentos2/DABA.xlsx', engine='xlsxwriter') as writer:
-        #dataGral.to_excel(writer, sheet_name='Generales')
-        dataResult.to_excel(writer, sheet_name='Resultados')
-        dataI.to_excel(writer, sheet_name='Iniciales')
+
+    with pd.ExcelWriter(excel_filename, engine='xlsxwriter') as writer:
+        dataT.to_excel(writer, sheet_name='Tiempos', index=False)
+        dataMOO.to_excel(writer, sheet_name='Resultados_DA')
+        dataResult.to_excel(writer, sheet_name='Resultados_iteración')
+        dataOrig.to_excel(writer, sheet_name='Matriz_decisión')
+        dataI.to_excel(writer, sheet_name='Variables_Iniciales')
+        dataw.to_excel(writer, sheet_name='w')
         datarii.to_excel(writer, sheet_name='Tasa_pulso(Inicial)')
         datari.to_excel(writer, sheet_name='Tasa_pulso(Final)')
         dataaii.to_excel(writer, sheet_name='Sonoridad(Inicial)')
         dataai.to_excel(writer, sheet_name='Sonoridad(Final)')
         dataf.to_excel(writer, sheet_name='Frecuencia')
         datarnd.to_excel(writer, sheet_name='No_Aleatorios')
-        #dataFmin.to_excel(writer, sheet_name="Función objetivo")
-        #dataFmax.to_excel(writer, sheet_name="Función objetivo(valor)")
-        v.to_excel(writer, sheet_name='Velocidad')
-        x.to_excel(writer, sheet_name='Posición')
-        #global_best.to_excel(writer, sheet_name='PBEST')
-        
-    print('Datos guardados el archivo:DABA.xlsx')
-    print()
+        x.to_excel(writer, sheet_name='Matriz_decisión')
+        dataSI.to_excel(writer, sheet_name='Solución_ideal')
+        dataDIS.to_excel(writer, sheet_name='Índice_similitud')
+        dataPS.to_excel(writer, sheet_name='Produto_sucesivo')
+        dataAlt.to_excel(writer, sheet_name='Ranking_alternativas')
+        dataAlt2.to_excel(writer, sheet_name='Ranking_alternativas2')
+        v.to_excel(writer, sheet_name='Velocidades')
+        x.to_excel(writer, sheet_name='Posiciones')
+    
+        # Ajustar automáticamente el ancho de las columnas en la hoja 'Tiempos'
+        worksheet = writer.sheets['Tiempos']
+        for i, col in enumerate(dataT.columns):
+            column_len = max(dataT[col].astype(str).map(len).max(), len(col))
+            worksheet.set_column(i, i, column_len)
+    print(f'Datos guardados en el archivo: {excel_filename}')
 
-    # Imprimimos los resultados de tiempo
+
+    ### -- Guardar los mismos datos en un archivo CSV con el mismo número
+    csv_filename = f'{base_filename}_{counter}.csv'
+    dataT.to_csv(csv_filename, index=False)
+    dataMOO.to_csv(csv_filename, mode='a', index=False)
+    dataResult.to_csv(csv_filename, mode='a', index=False)
+    dataOrig.to_csv(csv_filename, mode='a', index=False)
+    dataI.to_csv(csv_filename, mode='a', index=False)
+    dataw.to_csv(csv_filename, mode='a', index=False)
+    datarii.to_csv(csv_filename, mode='a', index=False)
+    datari.to_csv(csv_filename, mode='a', index=False)
+    dataaii.to_csv(csv_filename, mode='a', index=False)
+    dataai.to_csv(csv_filename, mode='a', index=False)
+    dataf.to_csv(csv_filename, mode='a', index=False)
+    datarnd.to_csv(csv_filename, mode='a', index=False)
+    x.to_csv(csv_filename, mode='a', index=False)
+    dataSI.to_csv(csv_filename, mode='a', index=False)
+    dataDIS.to_csv(csv_filename, mode='a', index=False)
+    dataPS.to_csv(csv_filename, mode='a', index=False)
+    dataAlt.to_csv(csv_filename, mode='a', index=False)
+    dataAlt2.to_csv(csv_filename, mode='a', index=False)
+    v.to_csv(csv_filename, mode='a', index=False)
+    x.to_csv(csv_filename, mode='a', index=False)
+    print(f'Datos guardados en el archivo CSV: {csv_filename}')
+    print()
+        # Imprimimos los resultados de tiempo
     print("Algoritmo DA-BA")
     print("Cantidad de Iteraciones:", it)
+    print("PRUEBA, Datos W: ", w)
     print("Hora de inicio:", hora_inicio.time())
     print("Fecha de inicio:", fecha_inicio)
     print("Hora de finalización:", hora_fin.time())
@@ -785,6 +749,7 @@ async def ejecutar_daba(w, wwi, c1, c2, T, r1, r2):
     print("REVIASAR DATOS DE NUEVO")
 
     await asyncio.sleep(0.1)
+    alternativas = [int(value) for value in alternativas]
 
     datosDaba = {
         "mejor_alternativa": alternativas,
