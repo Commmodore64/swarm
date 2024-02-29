@@ -7,10 +7,12 @@
 import asyncio
 import datetime
 import math
+import os
 import random
 from decimal import Decimal
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import xlsxwriter
 from flask import Flask
@@ -18,15 +20,16 @@ from openpyxl import load_workbook
 
 
 async def ejecutar_moorav(w, n):
-
+        
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
+
     print()
     print("-------------------------------------------")
     print("Construcción de la matriz de decisión")
     attributes = ["C1", "C2", "C3", "C4", "C5"]
     candidates = ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9"]
-    n = n
+    #n = 5
     a = 9
     raw_data = [
         [0.048, 0.047, 0.070, 0.087, 0.190],
@@ -53,7 +56,7 @@ async def ejecutar_moorav(w, n):
     print(EV,"\n")
 
     ### -- Pesos por cada criterio
-    w = [0.400, 0.200, 0.030, 0.070, 0.300]
+    #w = [0.400, 0.200, 0.030, 0.070, 0.300]
     #w = [0.300, 0.200, 0.200, 0.150, 0.150] 
     #w = [0.200, 0.200, 0.200, 0.200, 0.200]
     #w = [0.123, 0.099, 0.043, 0.343, 0.392]
@@ -80,10 +83,19 @@ async def ejecutar_moorav(w, n):
     print(weighted_data)
 
     ### -- Cálculo de la puntuación de cada alternativa:
-    if "Min" in EV:
-        global_scores = weighted_data.min(axis=1)  # Evaluación mínima
-    else:
-        global_scores = weighted_data.max(axis=1)  # Evaluación máxima
+    global_scores = [] ## Crear una lista para almacenar los resultados
+    for idx, row in weighted_data.iterrows():
+        score = 0  # Inicializamos la puntuación para esta fila
+        # Iteramos sobre cada valor en la fila y su correspondiente en 'EV'
+        for value, ev_value in zip(row, EV):
+            # Sumamos o restamos según el valor en 'EV'
+            if ev_value == "Max":
+                score += value
+            else:
+                score -= value
+        # Agregamos la puntuación final para esta fila a la lista de resultados
+        global_scores.append(score)
+    global_scores = pd.Series(global_scores) #Convertir la lista de resultados en una Serie de pandas
         
     print("\nEvaluación de cada alternativa:")
     print(global_scores)
@@ -110,16 +122,39 @@ async def ejecutar_moorav(w, n):
     # Para almacenar tiempo de ejecución
     hora_fin = datetime.datetime.now()
     ejecut = hora_fin - hora_inicio
+    tiempo_ejecucion = str(ejecut)
     arreglo = ranked_alternatives.index[-10:]
     arregloInvertido = tuple((arreglo))
     alternativas = arregloInvertido
+    
 
-    # Para guardar información en archivo de EXCEl
+    # Imprimimos los resultados de tiempo
+    print("Método MOORA")
+    print("Hora de inicio:", hora_inicio.time())
+    print("Fecha de inicio:", fecha_inicio)
+    print("Hora de finalización:", hora_fin.time())
+    print("Tiempo de ejecución:", ejecut)
+    print()
+
+
+    ####################################################################################
+    ### Para guardar información en archivo de EXCEl
+
+    base_filename = 'Experimentos/MOORA'# Obtener el nombre del archivo base
+    counter = 1 # Inicializar un contador para el nombre del archivo
+    excel_filename = f'{base_filename}_{counter}.xlsx'
+
+    ### --Verificar si el archivo ya existe, si es así, incrementar el contador
+    while os.path.exists(excel_filename):
+        counter += 1
+        excel_filename = f'{base_filename}_{counter}.xlsx'
+
+    ### -- Guardar los datos en un archivo xlsx
     dT = {"Método": ["MOORA"],
         "Hora de inicio": [hora_inicio.time()],
         "Fecha de inicio": [fecha_inicio],
         "Hora de finalización": [hora_fin.time()],
-        "Tiempo de ejecución": [ejecut]}
+        "Tiempo de ejecución": [tiempo_ejecucion] }
 
     dataT = pd.DataFrame(dT)
     dataAlt = pd.DataFrame(RankFin)
@@ -127,24 +162,45 @@ async def ejecutar_moorav(w, n):
     dataND = pd.DataFrame(normalized_data)
     datawd= pd.DataFrame(weighted_data)
     datags= pd.DataFrame(global_scores)
+    dataOrig=pd.DataFrame(raw_data)
+    dataECA = pd.DataFrame(EV)
 
 
-    with pd.ExcelWriter('Experimentos2/MOORA.xlsx', engine='xlsxwriter') as writer:
+    with pd.ExcelWriter('Experimentos/MOORA.xlsx', engine='xlsxwriter') as writer:
         dataT.to_excel(writer, sheet_name='Tiempos')
-        dataw.to_excel(writer, sheet_name='w')
-        x.to_excel(writer, sheet_name='Matriz_decisión')
-        dataND.to_excel(writer, sheet_name='Matriz_normaliza')
-        datawd.to_excel(writer, sheet_name='Matriz_ponderadss')
-        datags.to_excel(writer, sheet_name='Evaluación_cada_alternativa')
         dataAlt.to_excel(writer, sheet_name='Ranking_alternativas')
+        dataOrig.to_excel(writer, sheet_name='Matriz_decisión')
+        dataw.to_excel(writer, sheet_name='w')
+        datags.to_excel(writer, sheet_name='Evaluación_cada_alternativa')
+        dataECA.to_excel(writer, sheet_name='Ev_cardinales_alternativa')
+        dataND.to_excel(writer, sheet_name='Matriz_normaliza')
+        datawd.to_excel(writer, sheet_name='Matriz_ponderada')
+    
+        # Ajustar automáticamente el ancho de las columnas en la hoja 'Tiempos'
+        worksheet = writer.sheets['Tiempos']
+        for i, col in enumerate(dataT.columns):
+            column_len = max(dataT[col].astype(str).map(len).max(), len(col))
+            worksheet.set_column(i, i, column_len)  
+    print(f'Datos guardados en el archivo: {excel_filename}')
 
 
-    print('\n Datos guardados el archivo:MOORA.xlsx')
+    ### -- Guardar los mismos datos en un archivo CSV con el mismo número
+    csv_filename = f'{base_filename}_{counter}.csv'
+    dataT.to_csv(csv_filename, index=False)
+    dataAlt.to_csv(csv_filename, mode='a', index=False)
+    dataOrig.to_csv(csv_filename, mode='a', index=False)
+    dataw.to_csv(csv_filename, mode='a', index=False)
+    datags.to_csv(csv_filename, mode='a', index=False)
+    dataECA.to_csv(csv_filename, mode='a', index=False)
+    dataND.to_csv(csv_filename, mode='a', index=False)
+    datawd.to_csv(csv_filename, mode='a', index=False)
+    print(f'Datos guardados en el archivo CSV: {csv_filename}')
     print()
-
-    # Imprimimos los resultados de tiempo
+    
+        # Imprimimos los resultados de tiempo
     print("Método MOORA")
     print("Hora de inicio:", hora_inicio.time())
+    print("Datos de w:", w)
     print("Fecha de inicio:", fecha_inicio)
     print("Hora de finalización:", hora_fin.time())
     print("Tiempo de ejecución:", ejecut)
@@ -162,3 +218,4 @@ async def ejecutar_moorav(w, n):
     }
 
     return datosMoorav
+
