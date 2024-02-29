@@ -169,7 +169,7 @@ def calcular_dapso():
 def calcular_moorapso():
     try:
         # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w_input = [float(request.form[f'w{i}']) for i in range(1, 6)]
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
         wwi = float(request.form['wwi'])
         c1 = float(request.form['c1'])
@@ -202,7 +202,7 @@ def calcular_moorapso():
 def moorapso():
     try:
         # Obtén los datos del formulario
-        w_input = [request.form.get(f'w[{i}]', '') for i in range(5)]
+        w_input = [float(request.form[f'w{i}']) for i in range(1, 6)]
         w = [float(value) for value in w_input if value != '']  # Filtra valores vacíos
         wwi = float(request.form['wwi'])
         c1 = float(request.form['c1'])
