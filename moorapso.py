@@ -8,24 +8,25 @@
 # Universidad Autónoma de ciudad Juárez
 # ACtualizado 06/Feb/2023
 
-from ipaddress import v4_int_to_packed
-from flask import Flask, render_template, request
-from openpyxl import load_workbook
-import random
-from decimal import Decimal
-import pandas as pd
-import numpy as np
-import xlsxwriter
-from cProfile import label
-from matplotlib.transforms import Bbox
-import matplotlib.pyplot as plt
+import asyncio
+import datetime
 import math
 import random
+from cProfile import label
+from decimal import Decimal
+from ipaddress import v4_int_to_packed
 from re import X
-import datetime
-import asyncio
 
-async def ejecutar_moorapso(w, wwi, c1, c2, T, r1, r2):
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import xlsxwriter
+from flask import Flask, render_template, request
+from matplotlib.transforms import Bbox
+from openpyxl import load_workbook
+
+
+async def ejecutar_moorapso(w, wwi, c1, c2, T, r1, r2): 
     hora_inicio = datetime.datetime.now()
     fecha_inicio = hora_inicio.date()
     print()

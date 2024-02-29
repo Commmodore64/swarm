@@ -75,19 +75,19 @@ async def ejecutar_mooraba(w, alpha, gamma, iter_max):
     #print(EV,"             \n")
 
     ### -- Pesos por cada criterio
-    w = [0.400, 0.200, 0.030, 0.070, 0.300]
+    #w = [0.400, 0.200, 0.030, 0.070, 0.300]
     #w = [0.300, 0.200, 0.200, 0.150, 0.150] 
     #w = [0.200, 0.200, 0.200, 0.200, 0.200]
     #w = [0.123, 0.099, 0.043, 0.343, 0.392]
     weights = pd.Series(w, index=attributes)
     #print(weights,"          \n")
 
-    alpha=0.90   # Valor para actualizar Ai Loudness 
-    gamma=0.90   # Valor para actualizar ri Pulse Rate
+    #alpha=0.90   # Valor para actualizar Ai Loudness 
+    #gamma=0.90   # Valor para actualizar ri Pulse Rate
 
     # ----Iteraciones
     #iter_max = int(input("\n""Ingrese el numero de iteraciones maximas: \n"))
-    iter_max = 10
+    #iter_max = 10
 
     # ----Tasa de pulso (Pulse rate) 
     #Valores para tasa de pulso [0,1]
@@ -723,7 +723,7 @@ async def ejecutar_mooraba(w, alpha, gamma, iter_max):
     dataf = pd.DataFrame(f)
     datarnd= pd.DataFrame(rnd)
     dataOrig=pd.DataFrame(raw_data)
-    alternativas = Resultados[-9:]
+    alternativas = Resultados[-10:]
 
 
     with pd.ExcelWriter(excel_filename, engine='xlsxwriter') as writer:
@@ -791,6 +791,8 @@ async def ejecutar_mooraba(w, alpha, gamma, iter_max):
     print("Tiempo de ejecución:", ejecut)
     print()
     await asyncio.sleep(0.1)
+    
+    alternativas = [int(value) for value in alternativas]
 
     datosMooraba = {
         "mejor_alternativa": alternativas,
