@@ -683,7 +683,7 @@ async def ejecutar_moorapso(w, wwi, c1, c2, T, r1, r2):
     print()
     
     print("  --------------------------------- \n")
-    print('Datos guardados el archivo:PSO.xlsx')
+    print('Datos guardados el archivo:MOORA - PSO.xlsx')
     print()
     #Imprimimos los resultados de tiempo
     print("Algoritmo MOORA - PSO")
